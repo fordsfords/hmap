@@ -14,7 +14,6 @@ the public domain using CC0; see [License](#license).
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Table of contents](#table-of-contents)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Introduction](#introduction)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [API](#api)  
-&bull; [include "hmap.h"](#include-hmaph)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Development](#development)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [License](#license)  
 <!-- TOC created by '../mdtoc/mdtoc.pl README.md' (see https://github.com/fordsfords/mdtoc) -->
@@ -42,7 +41,7 @@ Should be pretty obvious.
 APIs return 0 for success, -1 for error.
 A key is an arbitrary byte array, not a necessarily a valid C string (although a C string works fine).
 
-<pre>
+````
 #include "hmap.h"
 
 int hmap_create(hmap_t **rtn_hmap, size_t table_size);  - returns new hmap via rtn_hmap.
@@ -50,7 +49,7 @@ int hmap_create(hmap_t **rtn_hmap, size_t table_size);  - returns new hmap via r
 int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val);  - only the pointer "val" is stored in the map.
 
 int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val);  - if not found, returns -1.
-</pre>
+````
 
 NOTE: the "hmap_write()" function will overwrite an existing entry with the same key.
 
