@@ -44,14 +44,16 @@ A key is an arbitrary byte array, not a necessarily a valid C string (although a
 ````
 #include "hmap.h"
 
-int hmap_create(hmap_t **rtn_hmap, size_t table_size);  - returns new hmap via rtn_hmap.
+int hmap_create(hmap_t **rtn_hmap, size_t table_size); - returns new hmap via rtn_hmap. Prefer table_size to be prime.
 
-int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val);  - only the pointer "val" is stored in the map.
+int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val); - only the pointer "val" is stored in the map.
 
-int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val);  - if not found, returns -1.
+int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val); - if not found, returns -1.
 ````
 
 NOTE: the "hmap_write()" function will overwrite an existing entry with the same key.
+
+This code was not written to be thread-safe.
 
 
 ## Development

@@ -90,6 +90,8 @@ void test1() {
 
   a = 1; b = 2; c = 3;
 
+  /* Table size of 1 to test collision resolution. */
+
   E(hmap_create(&hmap, 1));
   ASSRT(hmap->table_size == 1);
   ASSRT(hmap->seed == 42);
@@ -106,6 +108,7 @@ void test1() {
   ASSRT(v == &a);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
 
+  /* Overwrite existing entry with new value. */
   E(hmap_write(hmap, k, sizeof(k), &b));
   ASSRT(hmap->table_size == 1);
   n = hmap->table[0];
@@ -118,6 +121,7 @@ void test1() {
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
 
+  /* New key will collide. */
   k[4] = 0;
   E(hmap_write(hmap, k, sizeof(k), &c));
   ASSRT(hmap->table_size == 1);
@@ -140,9 +144,8 @@ void test1() {
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
 
-  /*********************************************************
-   * Leak memory! But I don't care.
-   *********************************************************/
+  /* Now create a large table so that my keys don't collide.
+   * This leaks memory, but I don't care. */
 
   E(hmap_create(&hmap, 7919));  /* prime number. */
   ASSRT(hmap->table_size == 7919);
@@ -162,6 +165,7 @@ void test1() {
   ASSRT(v == &a);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
 
+  /* Overwrite. */
   E(hmap_write(hmap, k, sizeof(k), &b));
   ASSRT(hmap->table_size == 7919);
   ASSRT(bucket == hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size);
@@ -175,6 +179,7 @@ void test1() {
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
 
+  /* New key, won't collide. */
   k[4] = 0;
   E(hmap_write(hmap, k, sizeof(k), &c));
   ASSRT(hmap->table_size == 7919);
