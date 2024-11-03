@@ -6,7 +6,7 @@
 # waived all copyright and related or neighboring rights to this work.
 # In other words, you can use this code for any purpose without any
 # restrictions.  This work is published from: United States.  The project home
-# is https://github.com/fordsfords/lsim
+# is https://github.com/fordsfords/err
 */
 
 #ifndef ERR_H
