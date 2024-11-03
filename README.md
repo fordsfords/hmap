@@ -56,10 +56,20 @@ NOTE: the "hmap_write()" function will overwrite an existing entry with the same
 This code was not written to be thread-safe.
 
 
+## Integration with "err"
+
+The hmape_* APIs are a simple wrapper to provide integration with
+the "err" project.
+See https://github.com/fordsfords/err
+
+This is optional.
+Only include the "hmape*" files if you want to use "err".
+
+
 ## Development
 
 * bld.sh - builds the test program.
-* tst.sh - calls "bld.sh" and runs the test program.
+* tst.sh - calls "bld.sh" and runs the test programs.
 
 
 ## License
