@@ -68,26 +68,26 @@ uint32_t hmap_murmur3_32(const void *key, size_t key_len, uint32_t seed) {
 int hmap_create(hmap_t **rtn_hmap, size_t table_size) {
   hmap_t *hmap;
 
-  if (table_size == 0) return -1;
+  if (table_size == 0) return HMAP_ERR_PARAM;
 
   hmap = malloc(sizeof(hmap_t));
-  if (!hmap) return -1;
+  if (!hmap) return HMAP_ERR_NOMEM;
 
   (hmap)->table_size = table_size;
   (hmap)->seed = 42;  /* Could be made in input parameter. */
   (hmap)->table = calloc(table_size, sizeof(hmap_node_t*));
   if (!(hmap)->table) {
     free(hmap);
-    return -1;
+    return HMAP_ERR_NOMEM;
   }
 
   *rtn_hmap = hmap;
-  return 0;
+  return HMAP_OK;
 }  /* hmap_create */
 
 
 int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
-  if (!hmap || !key) return -1;
+  if (!hmap || !key) return HMAP_ERR_PARAM;
 
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;
 
@@ -96,19 +96,19 @@ int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   while (node) {
     if (key_size == node->key_size && memcmp(node->key, key, key_size) == 0) {
       node->value = val;
-      return 0;
+      return HMAP_OK;
     }
     node = node->next;
   }
 
   /* Not found, create new entry. */
   hmap_node_t *new_node = malloc(sizeof(hmap_node_t));
-  if (!new_node) return -1;
+  if (!new_node) return HMAP_ERR_NOMEM;
 
   new_node->key = malloc(key_size);
   if (!new_node->key) {
     free(new_node);
-    return -1;
+    return HMAP_ERR_NOMEM;
   }
   memcpy(new_node->key, key, key_size);
   new_node->key_size = key_size;
@@ -118,12 +118,12 @@ int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   new_node->next = hmap->table[bucket];
   hmap->table[bucket] = new_node;
 
-  return 0;
+  return HMAP_OK;
 }  /* hmap_write */
 
 
 int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
-  if (!hmap || !key) return -1;
+  if (!hmap || !key) return HMAP_ERR_PARAM;
 
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;
 
@@ -132,11 +132,11 @@ int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
   while (node) {
     if (key_size == node->key_size && memcmp(node->key, key, key_size) == 0) {
       *rtn_val = node->value;
-      return 0;
+      return HMAP_OK;
     }
     node = node->next;
   }
 
   *rtn_val = NULL;
-  return -1;
+  return HMAP_ERR_NOTFOUND;
 }  /* hmap_lookup */

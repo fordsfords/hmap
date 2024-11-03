@@ -16,4 +16,6 @@ rm -f hmap_test
 
 gcc -Wall -pthread -g -o hmap_test -pthread hmap.c hmap_test.c; if [ $? -ne 0 ]; then exit 1; fi
 
+gcc -Wall -pthread -g -o hmape_test -pthread hmape.c hmap.c err.c hmape_test.c; if [ $? -ne 0 ]; then exit 1; fi
+
 echo "Build successful"

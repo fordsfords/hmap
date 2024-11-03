@@ -18,6 +18,7 @@ tmp.*
 # Executable
 a.out
 hmap_test
+hmape_test
 
 # Prerequisites
 *.d

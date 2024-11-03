@@ -1,4 +1,4 @@
-/* hmap_test.c */
+/* hmape_test.c */
 /*
 # This code and its documentation is Copyright 2024-2024 Steven Ford, http://geeky-boy.com
 # and licensed "public domain" style under Creative Commons "CC0": http://creativecommons.org/publicdomain/zero/1.0/
@@ -16,7 +16,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #endif
-#include "hmap.h"
+#include "err.h"
+#include "hmape.h"
 
 #if defined(_WIN32)
 #define MY_SLEEP_MS(msleep_msecs) Sleep(msleep_msecs)
@@ -43,7 +44,7 @@
 int o_testnum;
 
 
-char usage_str[] = "Usage: hmap_test [-h] [-t testnum]";
+char usage_str[] = "Usage: hmape_test [-h] [-t testnum]";
 void usage(char *msg) {
   if (msg) fprintf(stderr, "\n%s\n\n", msg);
   fprintf(stderr, "%s\n", usage_str);
@@ -86,17 +87,20 @@ void test1() {
   void *v;
   hmap_t *hmap;
   hmap_node_t *n;
-  uint32_t bucket;
+  err_t err;
 
   a = 1; b = 2; c = 3;
 
   /* Table size of 1 to test collision resolution. */
 
-  E(hmap_create(&hmap, 1));
+  ASSRT(hmape_create(&hmap, 0, &err) == HMAP_ERR_PARAM);
+  ASSRT(err.code == HMAP_ERR_PARAM);
+
+  E(hmape_create(&hmap, 1, NULL));
   ASSRT(hmap->table_size == 1);
   ASSRT(hmap->seed == 42);
 
-  E(hmap_write(hmap, k, sizeof(k), &a));
+  E(hmape_write(hmap, k, sizeof(k), &a, NULL));
   ASSRT(hmap->table_size == 1);
   n = hmap->table[0];
   ASSRT(n->value == &a);
@@ -104,12 +108,13 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, NULL) == HMAP_OK);
   ASSRT(v == &a);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
+  ASSRT(err.code == HMAP_ERR_NOTFOUND);
 
   /* Overwrite existing entry with new value. */
-  E(hmap_write(hmap, k, sizeof(k), &b));
+  E(hmape_write(hmap, k, sizeof(k), &b, NULL));
   ASSRT(hmap->table_size == 1);
   n = hmap->table[0];
   ASSRT(n->value == &b);
@@ -117,13 +122,14 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, NULL) == 0);
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
+  ASSRT(err.code == HMAP_ERR_NOTFOUND);
 
   /* New key will collide. */
   k[4] = 0;
-  E(hmap_write(hmap, k, sizeof(k), &c));
+  E(hmape_write(hmap, k, sizeof(k), &c, NULL));
   ASSRT(hmap->table_size == 1);
   n = hmap->table[0];
   ASSRT(n->value == &c);
@@ -136,69 +142,16 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) != 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, NULL) == 0);
   ASSRT(v == &c);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
+  ASSRT(err.code == HMAP_ERR_NOTFOUND);
   k[4] = 4;  /* Return key to original value. */
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, &err) == 0);
+  ASSRT(err.code == HMAP_OK);
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
-
-  /* Now create a large table so that my keys don't collide.
-   * This leaks memory, but I don't care. */
-
-  E(hmap_create(&hmap, 7919));  /* prime number. */
-  ASSRT(hmap->table_size == 7919);
-  ASSRT(hmap->seed == 42);
-
-  E(hmap_write(hmap, k, sizeof(k), &a));
-  ASSRT(hmap->table_size == 7919);
-  bucket = hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size;
-  ASSRT(bucket > 1);  /* True for this key. */
-  n = hmap->table[bucket];
-  ASSRT(n->value == &a);
-  ASSRT(n->next == NULL);
-  ASSRT(n->key_size == sizeof(k));
-  ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
-
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
-  ASSRT(v == &a);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
-
-  /* Overwrite. */
-  E(hmap_write(hmap, k, sizeof(k), &b));
-  ASSRT(hmap->table_size == 7919);
-  ASSRT(bucket == hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size);
-  n = hmap->table[bucket];
-  ASSRT(n->value == &b);
-  ASSRT(n->next == NULL);
-  ASSRT(n->key_size == sizeof(k));
-  ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
-
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
-  ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
-
-  /* New key, won't collide. */
-  k[4] = 0;
-  E(hmap_write(hmap, k, sizeof(k), &c));
-  ASSRT(hmap->table_size == 7919);
-  ASSRT(bucket != hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size);
-  ASSRT(n->next == NULL);  /* Previous bucket. */
-  bucket = hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size;
-  n = hmap->table[bucket];
-  ASSRT(n->value == &c);
-  ASSRT(n->next == NULL);
-  ASSRT(n->key_size == sizeof(k));
-  ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
-
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
-  ASSRT(v == &c);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
-  k[4] = 4;  /* Return key to original value. */
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
-  ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
+  ASSRT(err.code == HMAP_ERR_NOTFOUND);
 }  /* test1 */
 
 

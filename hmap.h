@@ -34,6 +34,11 @@ typedef struct {
 } hmap_t;
 
 
+#define HMAP_OK 0
+#define HMAP_ERR_PARAM -1
+#define HMAP_ERR_NOMEM -2
+#define HMAP_ERR_NOTFOUND -3
+
 uint32_t hmap_murmur3_32(const void *key, size_t len, uint32_t seed);
 
 int hmap_create(hmap_t **rtn_hmap, size_t table_size);
