@@ -20,11 +20,11 @@
 extern "C" {
 #endif
 
-int hmape_create(hmap_t **rtn_hmap, size_t table_size, err_t *err);
+char *hmape_create(hmap_t **rtn_hmap, size_t table_size, err_t *err);
 
-int hmape_write(hmap_t *hmap, void *key, size_t key_size, void *val, err_t *err);
+char *hmape_write(hmap_t *hmap, void *key, size_t key_size, void *val, err_t *err);
 
-int hmape_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val, err_t *err);
+char *hmape_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val, err_t *err);
 
 #ifdef __cplusplus
 }

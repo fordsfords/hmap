@@ -26,7 +26,7 @@
 #endif
 
 #define E(e_test) do { \
-  if ((e_test) != HMAP_OK) { \
+  if ((e_test) != ERR_OK) { \
     fprintf(stderr, "ERROR [%s:%d]: '%s' returned -1\n", __FILE__, __LINE__, #e_test); \
     exit(1); \
   } \
@@ -108,7 +108,7 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, NULL) == HMAP_OK);
+  E(hmape_lookup(hmap, k, sizeof(k), &v, NULL));
   ASSRT(v == &a);
   ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
   ASSRT(err.code == HMAP_ERR_NOTFOUND);
@@ -122,7 +122,7 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, NULL) == 0);
+  E(hmape_lookup(hmap, k, sizeof(k), &v, NULL));
   ASSRT(v == &b);
   ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
   ASSRT(err.code == HMAP_ERR_NOTFOUND);
@@ -142,13 +142,12 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) != 0);
 
-  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, NULL) == 0);
+  E(hmape_lookup(hmap, k, sizeof(k), &v, NULL));
   ASSRT(v == &c);
   ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
   ASSRT(err.code == HMAP_ERR_NOTFOUND);
   k[4] = 4;  /* Return key to original value. */
-  ASSRT(hmape_lookup(hmap, k, sizeof(k), &v, &err) == 0);
-  ASSRT(err.code == HMAP_OK);
+  E(hmape_lookup(hmap, k, sizeof(k), &v, &err));
   ASSRT(v == &b);
   ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
   ASSRT(err.code == HMAP_ERR_NOTFOUND);

@@ -25,7 +25,7 @@
 #endif
 
 #define E(e_test) do { \
-  if ((e_test) != HMAP_OK) { \
+  if ((e_test) != NULL) { \
     fprintf(stderr, "ERROR [%s:%d]: '%s' returned -1\n", __FILE__, __LINE__, #e_test); \
     exit(1); \
   } \
@@ -92,6 +92,10 @@ void test1() {
 
   /* Table size of 1 to test collision resolution. */
 
+  ASSRT(hmap_create(&hmap, 0) == HMAP_ERR_PARAM);  /* Error. */
+
+  E(hmap_create(&hmap, 1));
+
   E(hmap_create(&hmap, 1));
   ASSRT(hmap->table_size == 1);
   ASSRT(hmap->seed == 42);
@@ -104,9 +108,9 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &a);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
   /* Overwrite existing entry with new value. */
   E(hmap_write(hmap, k, sizeof(k), &b));
@@ -117,9 +121,9 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
   /* New key will collide. */
   k[4] = 0;
@@ -136,13 +140,13 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) != 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &c);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
   k[4] = 4;  /* Return key to original value. */
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
   /* Now create a large table so that my keys don't collide.
    * This leaks memory, but I don't care. */
@@ -161,9 +165,9 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &a);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
   /* Overwrite. */
   E(hmap_write(hmap, k, sizeof(k), &b));
@@ -175,9 +179,9 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
   /* New key, won't collide. */
   k[4] = 0;

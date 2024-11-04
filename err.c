@@ -15,6 +15,11 @@
 #include <stdint.h>
 #include "err.h"
 
+#define ERR(err_code) char *err_code = #err_code
+ERR(ERR_CODE_PARAM);
+ERR(ERR_CODE_NOMEM);
+#undef ERR
+
 char *err_asprintf(const char *format, ...) {
   va_list args1;
   va_list args2;

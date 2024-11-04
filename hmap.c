@@ -15,6 +15,13 @@
 #include "hmap.h"
 
 
+#define ERR(err_code) char *err_code = #err_code
+ERR(HMAP_ERR_PARAM);
+ERR(HMAP_ERR_NOMEM);
+ERR(HMAP_ERR_NOTFOUND);
+#undef ERR
+
+
 /* Murmur3 32-bit hash function. */
 uint32_t hmap_murmur3_32(const void *key, size_t key_len, uint32_t seed) {
   const uint8_t *data = (const uint8_t*)key;
@@ -65,7 +72,7 @@ uint32_t hmap_murmur3_32(const void *key, size_t key_len, uint32_t seed) {
 }  /* hmap_murmur3_32 */
 
 
-int hmap_create(hmap_t **rtn_hmap, size_t table_size) {
+char *hmap_create(hmap_t **rtn_hmap, size_t table_size) {
   hmap_t *hmap;
 
   if (table_size == 0) return HMAP_ERR_PARAM;
@@ -86,7 +93,7 @@ int hmap_create(hmap_t **rtn_hmap, size_t table_size) {
 }  /* hmap_create */
 
 
-int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
+char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   if (!hmap || !key) return HMAP_ERR_PARAM;
 
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;
@@ -122,7 +129,7 @@ int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
 }  /* hmap_write */
 
 
-int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
+char *hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
   if (!hmap || !key) return HMAP_ERR_PARAM;
 
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;

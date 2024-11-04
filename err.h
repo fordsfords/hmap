@@ -21,20 +21,9 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 
-struct err_s;  /* forward definition. */
-typedef struct err_s err_t;
-struct err_s {
-  int64_t code;
-  const char *msg;
-  const char *file;
-  const char *func;
-  int line;
-  err_t *next;
-};
-
 
 #define ERR_ABRT(err_code, err_msg) do { \
-  fprintf(stderr, "ERR_ABRT: [%s:%d %s()] code=%d, '%s'\n", \
+  fprintf(stderr, "ERR_ABRT: [%s:%d %s()] code=%s, '%s'\n", \
       __FILE__, __LINE__, __func__, err_code, err_msg); \
   fflush(stderr); \
   abort(); \
@@ -70,10 +59,29 @@ struct err_s {
 } while (0)
 
 
-#define ERR_OK 0
+#define ERR_RTN_OK(err_ptr) do { \
+  if (err_ptr) { err_ptr->code = ERR_OK; } \
+  return ERR_OK; \
+} while (0)
 
-#define ERR_CODE_PARAM -1
-#define ERR_CODE_NOMEM -2
+
+struct err_s;  /* forward definition. */
+typedef struct err_s err_t;
+struct err_s {
+  char *code;
+  const char *msg;
+  const char *file;
+  const char *func;
+  int line;
+  err_t *next;
+};
+
+#define ERR_OK NULL
+
+#define ERR(err_code) extern char *err_code
+ERR(ERR_CODE_PARAM);
+ERR(ERR_CODE_NOMEM);
+#undef ERR
 
 
 char *err_asprintf(const char *format, ...);
