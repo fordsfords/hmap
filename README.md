@@ -71,6 +71,7 @@ Only include the "hmape*" files if you want to use "err".
 
 * bld.sh - builds the test program.
 * tst.sh - calls "bld.sh" and runs the test programs.
+* tste.sh - calls "bld.sh" and runs the test programs integrated with "err".
 
 
 ## License
