@@ -87,6 +87,7 @@ void test1() {
   void *v;
   hmap_t *hmap;
   hmap_node_t *n;
+  hmap_node_t *iterator;
   err_t local_err;
 
   a = 1; b = 2; c = 3;
@@ -106,6 +107,11 @@ void test1() {
   ASSRT(hmap->table_size == 1);
   ASSRT(hmap->seed == 42);
 
+  /* Iterate over empty table. */
+  iterator = NULL;
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator == NULL);
+
   E(hmape_write(hmap, k, sizeof(k), &a, NULL));
   ASSRT(hmap->table_size == 1);
   n = hmap->table[0];
@@ -118,6 +124,14 @@ void test1() {
   ASSRT(v == &a);
   ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &local_err) == HMAP_ERR_NOTFOUND);
   ASSRT(local_err.code == HMAP_ERR_NOTFOUND);
+
+  iterator = NULL;
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator != NULL);
+  ASSRT(memcmp(iterator->key, k, sizeof(k)) == 0);
+  ASSRT(iterator->value == &a);
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator == NULL);
 
   /* Overwrite existing entry with new value. */
   E(hmape_write(hmap, k, sizeof(k), &b, NULL));
@@ -132,6 +146,14 @@ void test1() {
   ASSRT(v == &b);
   ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &local_err) == HMAP_ERR_NOTFOUND);
   ASSRT(local_err.code == HMAP_ERR_NOTFOUND);
+
+  iterator = NULL;
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator != NULL);
+  ASSRT(memcmp(iterator->key, k, sizeof(k)) == 0);
+  ASSRT(iterator->value == &b);
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator == NULL);
 
   /* New key will collide. */
   k[4] = 0;
@@ -157,6 +179,16 @@ void test1() {
   ASSRT(v == &b);
   ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &local_err) == HMAP_ERR_NOTFOUND);
   ASSRT(local_err.code == HMAP_ERR_NOTFOUND);
+
+  iterator = NULL;
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator != NULL);
+  ASSRT(iterator->value == &c);
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator != NULL);
+  ASSRT(iterator->value == &b);
+  E(hmape_next(hmap, &iterator, NULL));
+  ASSRT(iterator == NULL);
 
   E(hmape_delete(hmap, &local_err));
 }  /* test1 */

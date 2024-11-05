@@ -51,6 +51,10 @@ int hmap_delete(hmap_t *hmap); - deletes entire hmap object, freeing memory.
 int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val); - only the pointer "val" is stored in the map.
 
 int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val); - if not found, returns -1.
+
+int hmap_next(hmap_t *hmap, node_t **in_node); - This is an iterator to step through all records in the hash.
+Declare a "nodt_t *node" and set it to NULL to start at the beginning of the table. Each call to "hmap_next()"
+updates your "node" variable to point to the next node in the table, or NULL if you reach the end of the table.
 ````
 
 NOTE: the "hmap_write()" function will overwrite an existing entry with the same key.

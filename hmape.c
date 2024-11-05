@@ -41,3 +41,10 @@ char *hmape_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val, err
   ERR_ASSRT(err_code == ERR_OK, err_code, err);
   ERR_RTN_OK(err);
 }  /* hmape_lookup */
+
+
+char *hmape_next(hmap_t *hmap, hmap_node_t **in_node, err_t *err) {
+  char *err_code = hmap_next(hmap, in_node);
+  ERR_ASSRT(err_code == ERR_OK, err_code, err);
+  ERR_RTN_OK(err);
+}  /* hmape_lookup */

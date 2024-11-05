@@ -24,6 +24,7 @@ typedef struct hmap_node {
     size_t key_size;
     void *value;
     struct hmap_node *next;
+    uint32_t bucket;  /* Bucket that this node is under. */
 } hmap_node_t;
 
 // Hashmap structure
@@ -51,6 +52,8 @@ char *hmap_delete(hmap_t *hmap);
 char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val);
 
 char *hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val);
+
+char *hmap_next(hmap_t *hmap, hmap_node_t **in_node);
 
 #ifdef __cplusplus
 }

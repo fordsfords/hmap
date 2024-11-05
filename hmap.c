@@ -94,7 +94,7 @@ char *hmap_create(hmap_t **rtn_hmap, size_t table_size) {
 
 
 char *hmap_delete(hmap_t *hmap) {
-  int bucket;
+  uint32_t bucket;
 
   /* Step to each bucket and delete the list of nodes. */
   for (bucket = 0; bucket < hmap->table_size; bucket++) {
@@ -139,6 +139,7 @@ char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   memcpy(new_node->key, key, key_size);
   new_node->key_size = key_size;
   new_node->value = val;
+  new_node->bucket = bucket;
 
   /* Insert at head of list for this bucket */
   new_node->next = hmap->table[bucket];
@@ -166,3 +167,31 @@ char *hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
   *rtn_val = NULL;
   return HMAP_ERR_NOTFOUND;
 }  /* hmap_lookup */
+
+
+char *hmap_next(hmap_t *hmap, hmap_node_t **in_node) {
+  uint32_t bucket;
+  hmap_node_t *next_node;
+
+  if (*in_node == NULL) {
+    /* If in_node is NULL, user want's first node in table. */
+    bucket = 0;
+    next_node = hmap->table[bucket];
+  } else {
+    /* Next node in list. */
+    bucket = (*in_node)->bucket;
+    next_node = (*in_node)->next;
+  }
+
+  /* next_node == NULL means we hit the end of a list;
+   * check subsequent buckets till we find a non-empty one. */
+  while (next_node == NULL && bucket < hmap->table_size) {
+    bucket++;
+    if (bucket < hmap->table_size) {
+      next_node = hmap->table[bucket];
+    }
+  }
+
+  *in_node = next_node;  /* If no more nodes, it's NULL. */
+  return HMAP_OK;
+}  /* hmap_next */

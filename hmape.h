@@ -28,6 +28,8 @@ char *hmape_write(hmap_t *hmap, void *key, size_t key_size, void *val, err_t *er
 
 char *hmape_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val, err_t *err);
 
+char *hmape_next(hmap_t *hmap, hmap_node_t **in_node, err_t *err);
+
 #ifdef __cplusplus
 }
 #endif

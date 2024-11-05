@@ -87,6 +87,7 @@ void test1() {
   hmap_t *hmap;
   hmap_node_t *n;
   uint32_t bucket;
+  hmap_node_t *iterator, *iterator_sav;
 
   a = 1; b = 2; c = 3;
 
@@ -101,6 +102,11 @@ void test1() {
   ASSRT(hmap->table_size == 1);
   ASSRT(hmap->seed == 42);
 
+  /* Iterate over empty table. */
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
+
   E(hmap_write(hmap, k, sizeof(k), &a));
   ASSRT(hmap->table_size == 1);
   n = hmap->table[0];
@@ -112,6 +118,14 @@ void test1() {
   ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &a);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  ASSRT(memcmp(iterator->key, k, sizeof(k)) == 0);
+  ASSRT(iterator->value == &a);
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
 
   /* Overwrite existing entry with new value. */
   E(hmap_write(hmap, k, sizeof(k), &b));
@@ -125,6 +139,14 @@ void test1() {
   ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  ASSRT(memcmp(iterator->key, k, sizeof(k)) == 0);
+  ASSRT(iterator->value == &b);
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
 
   /* New key will collide. */
   k[4] = 0;
@@ -149,6 +171,16 @@ void test1() {
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  ASSRT(iterator->value == &c);
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  ASSRT(iterator->value == &b);
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
+
   E(hmap_delete(hmap));
 
   /* Now create a large table so that my keys don't collide. */
@@ -156,6 +188,11 @@ void test1() {
   E(hmap_create(&hmap, 7919));  /* prime number. */
   ASSRT(hmap->table_size == 7919);
   ASSRT(hmap->seed == 42);
+
+  /* Iterate over empty table. */
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
 
   E(hmap_write(hmap, k, sizeof(k), &a));
   ASSRT(hmap->table_size == 7919);
@@ -171,6 +208,14 @@ void test1() {
   ASSRT(v == &a);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  ASSRT(memcmp(iterator->key, k, sizeof(k)) == 0);
+  ASSRT(iterator->value == &a);
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
+
   /* Overwrite. */
   E(hmap_write(hmap, k, sizeof(k), &b));
   ASSRT(hmap->table_size == 7919);
@@ -184,6 +229,14 @@ void test1() {
   ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  ASSRT(memcmp(iterator->key, k, sizeof(k)) == 0);
+  ASSRT(iterator->value == &b);
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
 
   /* New key, won't collide. */
   k[4] = 0;
@@ -205,6 +258,22 @@ void test1() {
   ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  iterator_sav = iterator;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator != NULL);
+  if (iterator->value == &b) {
+    ASSRT(iterator->value == &b);
+    ASSRT(iterator_sav->value == &c);
+  } else {
+    ASSRT(iterator->value == &c);
+    ASSRT(iterator_sav->value == &b);
+  }
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator == NULL);
 
   E(hmap_delete(hmap));
 }  /* test1 */
