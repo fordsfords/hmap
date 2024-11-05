@@ -87,14 +87,20 @@ void test1() {
   void *v;
   hmap_t *hmap;
   hmap_node_t *n;
-  err_t err;
+  err_t local_err;
 
   a = 1; b = 2; c = 3;
 
   /* Table size of 1 to test collision resolution. */
 
-  ASSRT(hmape_create(&hmap, 0, &err) == HMAP_ERR_PARAM);
-  ASSRT(err.code == HMAP_ERR_PARAM);
+  ASSRT(hmape_create(&hmap, 0, &local_err) == HMAP_ERR_PARAM);
+  ASSRT(local_err.code == HMAP_ERR_PARAM);
+
+  E(hmape_create(&hmap, 1, NULL));
+  ASSRT(hmap->table_size == 1);
+  ASSRT(hmap->seed == 42);
+
+  E(hmape_delete(hmap, NULL));
 
   E(hmape_create(&hmap, 1, NULL));
   ASSRT(hmap->table_size == 1);
@@ -110,8 +116,8 @@ void test1() {
 
   E(hmape_lookup(hmap, k, sizeof(k), &v, NULL));
   ASSRT(v == &a);
-  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
-  ASSRT(err.code == HMAP_ERR_NOTFOUND);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &local_err) == HMAP_ERR_NOTFOUND);
+  ASSRT(local_err.code == HMAP_ERR_NOTFOUND);
 
   /* Overwrite existing entry with new value. */
   E(hmape_write(hmap, k, sizeof(k), &b, NULL));
@@ -124,8 +130,8 @@ void test1() {
 
   E(hmape_lookup(hmap, k, sizeof(k), &v, NULL));
   ASSRT(v == &b);
-  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
-  ASSRT(err.code == HMAP_ERR_NOTFOUND);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &local_err) == HMAP_ERR_NOTFOUND);
+  ASSRT(local_err.code == HMAP_ERR_NOTFOUND);
 
   /* New key will collide. */
   k[4] = 0;
@@ -144,13 +150,15 @@ void test1() {
 
   E(hmape_lookup(hmap, k, sizeof(k), &v, NULL));
   ASSRT(v == &c);
-  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
-  ASSRT(err.code == HMAP_ERR_NOTFOUND);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &local_err) == HMAP_ERR_NOTFOUND);
+  ASSRT(local_err.code == HMAP_ERR_NOTFOUND);
   k[4] = 4;  /* Return key to original value. */
-  E(hmape_lookup(hmap, k, sizeof(k), &v, &err));
+  E(hmape_lookup(hmap, k, sizeof(k), &v, &local_err));
   ASSRT(v == &b);
-  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &err) == HMAP_ERR_NOTFOUND);
-  ASSRT(err.code == HMAP_ERR_NOTFOUND);
+  ASSRT(hmape_lookup(hmap, "foobar", sizeof(k), &v, &local_err) == HMAP_ERR_NOTFOUND);
+  ASSRT(local_err.code == HMAP_ERR_NOTFOUND);
+
+  E(hmape_delete(hmap, &local_err));
 }  /* test1 */
 
 

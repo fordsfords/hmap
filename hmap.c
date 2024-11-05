@@ -93,6 +93,25 @@ char *hmap_create(hmap_t **rtn_hmap, size_t table_size) {
 }  /* hmap_create */
 
 
+char *hmap_delete(hmap_t *hmap) {
+  int bucket;
+
+  /* Step to each bucket and delete the list of nodes. */
+  for (bucket = 0; bucket < hmap->table_size; bucket++) {
+    hmap_node_t *node = hmap->table[bucket];
+    while (node) {
+      hmap_node_t *next = node->next;
+      free(node->key);
+      free(node);
+      node = next;
+    }
+  }
+
+  free(hmap);
+  return HMAP_OK;
+}  /* hmap_delete */
+
+
 char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   if (!hmap || !key) return HMAP_ERR_PARAM;
 

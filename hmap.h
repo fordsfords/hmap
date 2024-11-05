@@ -46,6 +46,8 @@ uint32_t hmap_murmur3_32(const void *key, size_t len, uint32_t seed);
 
 char *hmap_create(hmap_t **rtn_hmap, size_t table_size);
 
+char *hmap_delete(hmap_t *hmap);
+
 char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val);
 
 char *hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val);

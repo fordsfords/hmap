@@ -29,8 +29,7 @@ Fortunately, Austin Appleby's excellent murmur3 is in the public domain,
 so with a little help from Claude.ai I was able to get this working in a couple hours.
 
 Note that it could be more efficient, and it certainly could be more functional.
-You can't even delete the silly thing!
-(I'll probably feel guilty about that and add it later.)
+E.g. it might be nice to remove individual records.
 I emphasized short and simple over almost everything else.
 
 For a more full-featured hashmap with an MIT license, see https://github.com/tidwall/hashmap.c
@@ -46,6 +45,8 @@ A key is an arbitrary byte array, not a necessarily a valid C string (although a
 #include "hmap.h"
 
 int hmap_create(hmap_t **rtn_hmap, size_t table_size); - returns new hmap via rtn_hmap. Prefer table_size to be prime.
+
+int hmap_delete(hmap_t *hmap); - deletes entire hmap object, freeing memory.
 
 int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val); - only the pointer "val" is stored in the map.
 

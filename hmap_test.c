@@ -95,6 +95,7 @@ void test1() {
   ASSRT(hmap_create(&hmap, 0) == HMAP_ERR_PARAM);  /* Error. */
 
   E(hmap_create(&hmap, 1));
+  E(hmap_delete(hmap));
 
   E(hmap_create(&hmap, 1));
   ASSRT(hmap->table_size == 1);
@@ -148,8 +149,9 @@ void test1() {
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
 
-  /* Now create a large table so that my keys don't collide.
-   * This leaks memory, but I don't care. */
+  E(hmap_delete(hmap));
+
+  /* Now create a large table so that my keys don't collide. */
 
   E(hmap_create(&hmap, 7919));  /* prime number. */
   ASSRT(hmap->table_size == 7919);
@@ -203,6 +205,8 @@ void test1() {
   ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
   ASSRT(v == &b);
   ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+
+  E(hmap_delete(hmap));
 }  /* test1 */
 
 

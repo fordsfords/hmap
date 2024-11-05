@@ -22,6 +22,13 @@ char *hmape_create(hmap_t **rtn_hmap, size_t table_size, err_t *err) {
 }  /* hmape_create */
 
 
+char *hmape_delete(hmap_t *hmap, err_t *err) {
+  char *err_code = hmap_delete(hmap);
+  ERR_ASSRT(err_code == ERR_OK, err_code, err);
+  ERR_RTN_OK(err);
+}  /* hmape_delete */
+
+
 char *hmape_write(hmap_t *hmap, void *key, size_t key_size, void *val, err_t *err) {
   char *err_code = hmap_write(hmap, key, key_size, val);
   ERR_ASSRT(err_code == ERR_OK, err_code, err);
