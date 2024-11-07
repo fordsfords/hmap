@@ -118,6 +118,7 @@ ERR_API void err_dispose(err_t *err);
  */
 ERR_API err_t *err_throw(char *file, int line, int code, char *msg);
 ERR_API err_t *err_rethrow(char *file, int line, err_t *in_err, int code, char *msg);
+char *err_asprintf(const char *format, ...);
 
 
 #if defined(__cplusplus)

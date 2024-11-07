@@ -12,6 +12,7 @@
  */
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
 #include "err.h"
@@ -101,3 +102,36 @@ void err_dispose(err_t *err)
     err = next_err;
   }
 }  /* err_dispose */
+
+
+char *err_asprintf(const char *format, ...) {
+  va_list args1;
+  va_list args2;
+  va_start(args1, format);
+  va_copy(args2, args1);  /* Make a copy since we need to use it twice */
+
+  int size = vsnprintf(NULL, 0, format, args1) + 1;  /* +1 for null terminator */
+  va_end(args1);
+
+  if (size < 0) {
+    va_end(args2);
+    return NULL;
+  }
+
+  /* Allocate buffer. */
+  char *str = malloc(size);
+  if (str == NULL) {
+    va_end(args2);
+    return NULL;
+  }
+
+  int result = vsnprintf(str, size, format, args2);
+  va_end(args2);
+
+  if (result < 0) {
+    free(str);
+    return NULL;
+  }
+
+  return str;
+}  /* err_asprintf */
