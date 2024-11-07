@@ -96,6 +96,7 @@ ERR_F hmap_delete(hmap_t *hmap) {
     hmap_node_t *node = hmap->table[bucket];
     while (node) {
       hmap_node_t *next = node->next;
+      /* The application is responsible for freeing the value. */
       free(node->key);
       free(node);
       node = next;
