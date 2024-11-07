@@ -21,9 +21,9 @@
 err_t *err_throw(char *file, int line, int code, char *mesg)
 {
   err_t *err = NULL;
-  err = (err_t *)malloc(sizeof(err_t));
+  err = (err_t *)calloc(1, sizeof(err_t));
   if (err == NULL) {
-    fprintf(stderr, "err_throw: malloc error, aborting.\n"); fflush(stderr);
+    fprintf(stderr, "err_throw: calloc error, aborting.\n"); fflush(stderr);
     abort();
   }
 
@@ -49,9 +49,9 @@ err_t *err_throw(char *file, int line, int code, char *mesg)
 err_t *err_rethrow(char *file, int line, err_t *in_err, int code, char *mesg)
 {
   err_t *new_err = NULL;
-  new_err = (err_t *)malloc(sizeof(err_t));
+  new_err = (err_t *)calloc(1, sizeof(err_t));
   if (new_err == NULL) {
-    fprintf(stderr, "err_rethrow: malloc error, aborting.\n"); fflush(stderr);
+    fprintf(stderr, "err_rethrow: calloc error, aborting.\n"); fflush(stderr);
     abort();
   }
 

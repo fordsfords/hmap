@@ -71,7 +71,7 @@ ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size) {
 
   ERR_ASSRT(table_size != 0, HMAP_ERR_PARAM);
 
-  hmap = malloc(sizeof(hmap_t));
+  hmap = calloc(1, sizeof(hmap_t));
   ERR_ASSRT(hmap, HMAP_ERR_NOMEM);
 
   (hmap)->table_size = table_size;
@@ -123,7 +123,7 @@ ERR_F hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   }
 
   /* Not found, create new entry. */
-  hmap_node_t *new_node = malloc(sizeof(hmap_node_t));
+  hmap_node_t *new_node = calloc(1, sizeof(hmap_node_t));
   ERR_ASSRT(new_node, HMAP_ERR_NOMEM);
 
   new_node->key = malloc(key_size);
