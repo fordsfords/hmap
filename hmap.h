@@ -17,6 +17,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "err.h"
 
 /* Linked list node for handling collisions */
 typedef struct hmap_node {
@@ -35,25 +36,22 @@ typedef struct {
 } hmap_t;
 
 
-#define HMAP_OK NULL
+#define HMAP_ERR_PARAM 1
+#define HMAP_ERR_NOMEM 2
+#define HMAP_ERR_NOTFOUND 3
 
-#define ERR(err_code) extern char *err_code
-ERR(HMAP_ERR_PARAM);
-ERR(HMAP_ERR_NOMEM);
-ERR(HMAP_ERR_NOTFOUND);
-#undef ERR
 
 uint32_t hmap_murmur3_32(const void *key, size_t len, uint32_t seed);
 
-char *hmap_create(hmap_t **rtn_hmap, size_t table_size);
+ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size);
 
-char *hmap_delete(hmap_t *hmap);
+ERR_F hmap_delete(hmap_t *hmap);
 
-char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val);
+ERR_F hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val);
 
-char *hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val);
+ERR_F hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val);
 
-char *hmap_next(hmap_t *hmap, hmap_node_t **in_node);
+ERR_F hmap_next(hmap_t *hmap, hmap_node_t **in_node);
 
 #ifdef __cplusplus
 }

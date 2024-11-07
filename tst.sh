@@ -25,9 +25,12 @@ ASSRT() {
 
 ./bld.sh; ASSRT "$? -eq 0"
 
+rm -f core.* *.log
 
 T=1
 if [ "$SINGLE_T" -eq 0 -o "$SINGLE_T" -eq "$T" ]; then :
   TEST
   $B -t 1 2>&1 | tee -a $B.$T.log;  ST=${PIPESTATUS[0]}; if [ $ST -ne 0 ]; then exit 1; fi
 fi
+
+echo "All done."

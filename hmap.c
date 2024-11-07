@@ -12,14 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include "err.h"
 #include "hmap.h"
-
-
-#define ERR(err_code) char *err_code = #err_code
-ERR(HMAP_ERR_PARAM);
-ERR(HMAP_ERR_NOMEM);
-ERR(HMAP_ERR_NOTFOUND);
-#undef ERR
 
 
 /* Murmur3 32-bit hash function. */
@@ -72,28 +66,28 @@ uint32_t hmap_murmur3_32(const void *key, size_t key_len, uint32_t seed) {
 }  /* hmap_murmur3_32 */
 
 
-char *hmap_create(hmap_t **rtn_hmap, size_t table_size) {
+ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size) {
   hmap_t *hmap;
 
-  if (table_size == 0) return HMAP_ERR_PARAM;
+  ERR_ASSRT(table_size != 0, HMAP_ERR_PARAM);
 
   hmap = malloc(sizeof(hmap_t));
-  if (!hmap) return HMAP_ERR_NOMEM;
+  ERR_ASSRT(hmap, HMAP_ERR_NOMEM);
 
   (hmap)->table_size = table_size;
   (hmap)->seed = 42;  /* Could be made in input parameter. */
   (hmap)->table = calloc(table_size, sizeof(hmap_node_t*));
   if (!(hmap)->table) {
     free(hmap);
-    return HMAP_ERR_NOMEM;
+    ERR_THROW(HMAP_ERR_NOMEM, "hmap->table");
   }
 
   *rtn_hmap = hmap;
-  return HMAP_OK;
+  return ERR_OK;
 }  /* hmap_create */
 
 
-char *hmap_delete(hmap_t *hmap) {
+ERR_F hmap_delete(hmap_t *hmap) {
   uint32_t bucket;
 
   /* Step to each bucket and delete the list of nodes. */
@@ -108,12 +102,13 @@ char *hmap_delete(hmap_t *hmap) {
   }
 
   free(hmap);
-  return HMAP_OK;
+  return ERR_OK;
 }  /* hmap_delete */
 
 
-char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
-  if (!hmap || !key) return HMAP_ERR_PARAM;
+ERR_F hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
+  ERR_ASSRT(hmap, HMAP_ERR_PARAM);
+  ERR_ASSRT(key, HMAP_ERR_PARAM);
 
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;
 
@@ -122,19 +117,19 @@ char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   while (node) {
     if (key_size == node->key_size && memcmp(node->key, key, key_size) == 0) {
       node->value = val;
-      return HMAP_OK;
+      return ERR_OK;
     }
     node = node->next;
   }
 
   /* Not found, create new entry. */
   hmap_node_t *new_node = malloc(sizeof(hmap_node_t));
-  if (!new_node) return HMAP_ERR_NOMEM;
+  ERR_ASSRT(new_node, HMAP_ERR_NOMEM);
 
   new_node->key = malloc(key_size);
   if (!new_node->key) {
     free(new_node);
-    return HMAP_ERR_NOMEM;
+    ERR_THROW(HMAP_ERR_NOMEM, "new_node->key");
   }
   memcpy(new_node->key, key, key_size);
   new_node->key_size = key_size;
@@ -145,12 +140,13 @@ char *hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   new_node->next = hmap->table[bucket];
   hmap->table[bucket] = new_node;
 
-  return HMAP_OK;
+  return ERR_OK;
 }  /* hmap_write */
 
 
-char *hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
-  if (!hmap || !key) return HMAP_ERR_PARAM;
+ERR_F hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
+  ERR_ASSRT(hmap, HMAP_ERR_PARAM);
+  ERR_ASSRT(key, HMAP_ERR_PARAM);
 
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;
 
@@ -159,19 +155,21 @@ char *hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
   while (node) {
     if (key_size == node->key_size && memcmp(node->key, key, key_size) == 0) {
       *rtn_val = node->value;
-      return HMAP_OK;
+      return ERR_OK;
     }
     node = node->next;
   }
 
   *rtn_val = NULL;
-  return HMAP_ERR_NOTFOUND;
+  ERR_THROW(HMAP_ERR_NOTFOUND, "key not found");
 }  /* hmap_lookup */
 
 
-char *hmap_next(hmap_t *hmap, hmap_node_t **in_node) {
+ERR_F hmap_next(hmap_t *hmap, hmap_node_t **in_node) {
   uint32_t bucket;
   hmap_node_t *next_node;
+
+  ERR_ASSRT(hmap, HMAP_ERR_PARAM);
 
   if (*in_node == NULL) {
     /* If in_node is NULL, user want's first node in table. */
@@ -193,5 +191,5 @@ char *hmap_next(hmap_t *hmap, hmap_node_t **in_node) {
   }
 
   *in_node = next_node;  /* If no more nodes, it's NULL. */
-  return HMAP_OK;
+  return ERR_OK;
 }  /* hmap_next */

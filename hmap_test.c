@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #endif
+#include "err.h"
 #include "hmap.h"
 
 #if defined(_WIN32)
@@ -88,14 +89,19 @@ void test1() {
   hmap_node_t *n;
   uint32_t bucket;
   hmap_node_t *iterator, *iterator_sav;
+  err_t *err;
 
   a = 1; b = 2; c = 3;
 
   /* Table size of 1 to test collision resolution. */
 
-  ASSRT(hmap_create(&hmap, 0) == HMAP_ERR_PARAM);  /* Error. */
+  /* Error. */
+  err = hmap_create(&hmap, 0);  ASSRT(err->code == HMAP_ERR_PARAM);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
 
   E(hmap_create(&hmap, 1));
+  ASSRT(hmap->table_size == 1);
+  ASSRT(hmap->seed == 42);
   E(hmap_delete(hmap));
 
   E(hmap_create(&hmap, 1));
@@ -115,9 +121,10 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &a);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
 
   iterator = NULL;
   E(hmap_next(hmap, &iterator));
@@ -136,9 +143,10 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
 
   iterator = NULL;
   E(hmap_next(hmap, &iterator));
@@ -163,13 +171,15 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) != 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &c);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
   k[4] = 4;  /* Return key to original value. */
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
 
   iterator = NULL;
   E(hmap_next(hmap, &iterator));
@@ -204,9 +214,10 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &a);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
 
   iterator = NULL;
   E(hmap_next(hmap, &iterator));
@@ -226,9 +237,10 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == HMAP_OK);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) == HMAP_ERR_NOTFOUND);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
 
   iterator = NULL;
   E(hmap_next(hmap, &iterator));
@@ -251,13 +263,15 @@ void test1() {
   ASSRT(n->key_size == sizeof(k));
   ASSRT(memcmp(n->key, k, sizeof(k)) == 0);
 
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &c);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
   k[4] = 4;  /* Return key to original value. */
-  ASSRT(hmap_lookup(hmap, k, sizeof(k), &v) == 0);
+  E(hmap_lookup(hmap, k, sizeof(k), &v));
   ASSRT(v == &b);
-  ASSRT(hmap_lookup(hmap, "foobar", sizeof(k), &v) != 0);
+  err = hmap_lookup(hmap, "foobar", sizeof(k), &v);  ASSRT(err->code == HMAP_ERR_NOTFOUND);
+  err_dispose(err);  /* Since we are handling, delete the err object. */
 
   iterator = NULL;
   E(hmap_next(hmap, &iterator));
@@ -284,7 +298,7 @@ int main(int argc, char **argv) {
 
   if (o_testnum == 0 || o_testnum == 1) {
     test1();
-    printf("test1: success\n");
+    printf("test1: success\n"); fflush(stdout);
   }
 
   return 0;
