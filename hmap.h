@@ -28,7 +28,6 @@ typedef struct hmap_node {
     uint32_t bucket;  /* Bucket that this node is under. */
 } hmap_node_t;
 
-// Hashmap structure
 typedef struct {
     size_t table_size;
     uint32_t seed;
@@ -57,4 +56,4 @@ ERR_F hmap_next(hmap_t *hmap, hmap_node_t **in_node);
 }
 #endif
 
-#endif // HMAP_H
+#endif  /* HMAP_H */
