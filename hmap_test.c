@@ -101,11 +101,13 @@ void test1() {
 
   E(hmap_create(&hmap, 1));
   ASSRT(hmap->table_size == 1);
+  ASSRT(hmap->num_entries == 0);
   ASSRT(hmap->seed == 42);
   E(hmap_delete(hmap));
 
   E(hmap_create(&hmap, 1));
   ASSRT(hmap->table_size == 1);
+  ASSRT(hmap->num_entries == 0);
   ASSRT(hmap->seed == 42);
 
   /* Iterate over empty table. */
@@ -115,6 +117,7 @@ void test1() {
 
   E(hmap_write(hmap, k, sizeof(k), &a));
   ASSRT(hmap->table_size == 1);
+  ASSRT(hmap->num_entries == 1);
   n = hmap->table[0];
   ASSRT(n->value == &a);
   ASSRT(n->next == NULL);
@@ -137,6 +140,7 @@ void test1() {
   /* Overwrite existing entry with new value. */
   E(hmap_write(hmap, k, sizeof(k), &b));
   ASSRT(hmap->table_size == 1);
+  ASSRT(hmap->num_entries == 1);
   n = hmap->table[0];
   ASSRT(n->value == &b);
   ASSRT(n->next == NULL);
@@ -160,6 +164,7 @@ void test1() {
   k[4] = 0;
   E(hmap_write(hmap, k, sizeof(k), &c));
   ASSRT(hmap->table_size == 1);
+  ASSRT(hmap->num_entries == 2);
   n = hmap->table[0];
   ASSRT(n->value == &c);
   ASSRT(n->next != NULL);
@@ -197,6 +202,7 @@ void test1() {
 
   E(hmap_create(&hmap, 7919));  /* prime number. */
   ASSRT(hmap->table_size == 7919);
+  ASSRT(hmap->num_entries == 0);
   ASSRT(hmap->seed == 42);
 
   /* Iterate over empty table. */
@@ -206,6 +212,7 @@ void test1() {
 
   E(hmap_write(hmap, k, sizeof(k), &a));
   ASSRT(hmap->table_size == 7919);
+  ASSRT(hmap->num_entries == 1);
   bucket = hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size;
   ASSRT(bucket > 1);  /* True for this key. */
   n = hmap->table[bucket];
@@ -230,6 +237,7 @@ void test1() {
   /* Overwrite. */
   E(hmap_write(hmap, k, sizeof(k), &b));
   ASSRT(hmap->table_size == 7919);
+  ASSRT(hmap->num_entries == 1);
   ASSRT(bucket == hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size);
   n = hmap->table[bucket];
   ASSRT(n->value == &b);
@@ -254,6 +262,7 @@ void test1() {
   k[4] = 0;
   E(hmap_write(hmap, k, sizeof(k), &c));
   ASSRT(hmap->table_size == 7919);
+  ASSRT(hmap->num_entries == 2);
   ASSRT(bucket != hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size);
   ASSRT(n->next == NULL);  /* Previous bucket. */
   bucket = hmap_murmur3_32(k, sizeof(k), hmap->seed) % hmap->table_size;

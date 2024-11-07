@@ -32,6 +32,7 @@ typedef struct {
     size_t table_size;
     uint32_t seed;
     hmap_node_t **table;
+    int num_entries;
 } hmap_t;
 
 

@@ -76,6 +76,7 @@ ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size) {
 
   (hmap)->table_size = table_size;
   (hmap)->seed = 42;  /* Could be made in input parameter. */
+  (hmap)->num_entries = 0;
   (hmap)->table = calloc(table_size, sizeof(hmap_node_t*));
   if (!(hmap)->table) {
     free(hmap);
@@ -139,6 +140,7 @@ ERR_F hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
   /* Insert at head of list for this bucket */
   new_node->next = hmap->table[bucket];
   hmap->table[bucket] = new_node;
+  hmap->num_entries ++;
 
   return ERR_OK;
 }  /* hmap_write */
