@@ -157,13 +157,17 @@ ERR_F hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
   hmap_node_t *node = hmap->table[bucket];
   while (node) {
     if (key_size == node->key_size && memcmp(node->key, key, key_size) == 0) {
-      *rtn_val = node->value;
+      if (rtn_val) {
+        *rtn_val = node->value;
+      }
       return ERR_OK;
     }
     node = node->next;
   }
 
-  *rtn_val = NULL;
+  if (rtn_val) {
+    *rtn_val = NULL;
+  }
   ERR_THROW(HMAP_ERR_NOTFOUND, "key not found");
 }  /* hmap_lookup */
 
