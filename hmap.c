@@ -108,7 +108,7 @@ ERR_F hmap_delete(hmap_t *hmap) {
 }  /* hmap_delete */
 
 
-ERR_F hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
+ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val) {
   ERR_ASSRT(hmap, HMAP_ERR_PARAM);
   ERR_ASSRT(key, HMAP_ERR_PARAM);
 
@@ -147,7 +147,7 @@ ERR_F hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val) {
 }  /* hmap_write */
 
 
-ERR_F hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val) {
+ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val) {
   ERR_ASSRT(hmap, HMAP_ERR_PARAM);
   ERR_ASSRT(key, HMAP_ERR_PARAM);
 

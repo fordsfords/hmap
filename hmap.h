@@ -47,9 +47,9 @@ ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size);
 
 ERR_F hmap_delete(hmap_t *hmap);
 
-ERR_F hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val);
+ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val);
 
-ERR_F hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val);
+ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val);
 
 ERR_F hmap_next(hmap_t *hmap, hmap_node_t **in_node);
 
