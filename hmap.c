@@ -77,7 +77,7 @@ ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size) {
   (hmap)->table_size = table_size;
   (hmap)->seed = 42;  /* Could be made in input parameter. */
   (hmap)->num_entries = 0;
-  (hmap)->table = calloc(table_size, sizeof(hmap_node_t*));
+  (hmap)->table = calloc(table_size, sizeof(hmap_entry_t*));
   if (!(hmap)->table) {
     free(hmap);
     ERR_THROW(HMAP_ERR_NOMEM, "hmap->table");
@@ -91,15 +91,15 @@ ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size) {
 ERR_F hmap_delete(hmap_t *hmap) {
   uint32_t bucket;
 
-  /* Step to each bucket and delete the list of nodes. */
+  /* Step to each bucket and delete the list of entries. */
   for (bucket = 0; bucket < hmap->table_size; bucket++) {
-    hmap_node_t *node = hmap->table[bucket];
-    while (node) {
-      hmap_node_t *next = node->next;
+    hmap_entry_t *entry = hmap->table[bucket];
+    while (entry) {
+      hmap_entry_t *next = entry->next;
       /* The application is responsible for freeing the value. */
-      free(node->key);
-      free(node);
-      node = next;
+      free(entry->key);
+      free(entry);
+      entry = next;
     }
   }
 
@@ -115,32 +115,32 @@ ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val) {
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;
 
   /* Search linked list.  */
-  hmap_node_t *node = hmap->table[bucket];
-  while (node) {
-    if (key_size == node->key_size && memcmp(node->key, key, key_size) == 0) {
-      node->value = val;
+  hmap_entry_t *entry = hmap->table[bucket];
+  while (entry) {
+    if (key_size == entry->key_size && memcmp(entry->key, key, key_size) == 0) {
+      entry->value = val;
       return ERR_OK;
     }
-    node = node->next;
+    entry = entry->next;
   }
 
   /* Not found, create new entry. */
-  hmap_node_t *new_node = calloc(1, sizeof(hmap_node_t));
-  ERR_ASSRT(new_node, HMAP_ERR_NOMEM);
+  hmap_entry_t *new_entry = calloc(1, sizeof(hmap_entry_t));
+  ERR_ASSRT(new_entry, HMAP_ERR_NOMEM);
 
-  new_node->key = malloc(key_size);
-  if (!new_node->key) {
-    free(new_node);
-    ERR_THROW(HMAP_ERR_NOMEM, "new_node->key");
+  new_entry->key = malloc(key_size);
+  if (!new_entry->key) {
+    free(new_entry);
+    ERR_THROW(HMAP_ERR_NOMEM, "new_entry->key");
   }
-  memcpy(new_node->key, key, key_size);
-  new_node->key_size = key_size;
-  new_node->value = val;
-  new_node->bucket = bucket;
+  memcpy(new_entry->key, key, key_size);
+  new_entry->key_size = key_size;
+  new_entry->value = val;
+  new_entry->bucket = bucket;
 
   /* Insert at head of list for this bucket */
-  new_node->next = hmap->table[bucket];
-  hmap->table[bucket] = new_node;
+  new_entry->next = hmap->table[bucket];
+  hmap->table[bucket] = new_entry;
   hmap->num_entries ++;
 
   return ERR_OK;
@@ -154,15 +154,15 @@ ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val
   uint32_t bucket = hmap_murmur3_32(key, key_size, hmap->seed) % hmap->table_size;
 
   /* Search linked list */
-  hmap_node_t *node = hmap->table[bucket];
-  while (node) {
-    if (key_size == node->key_size && memcmp(node->key, key, key_size) == 0) {
+  hmap_entry_t *entry = hmap->table[bucket];
+  while (entry) {
+    if (key_size == entry->key_size && memcmp(entry->key, key, key_size) == 0) {
       if (rtn_val) {
-        *rtn_val = node->value;
+        *rtn_val = entry->value;
       }
       return ERR_OK;
     }
-    node = node->next;
+    entry = entry->next;
   }
 
   if (rtn_val) {
@@ -172,31 +172,31 @@ ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val
 }  /* hmap_lookup */
 
 
-ERR_F hmap_next(hmap_t *hmap, hmap_node_t **in_node) {
+ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry) {
   uint32_t bucket;
-  hmap_node_t *next_node;
+  hmap_entry_t *next_entry;
 
   ERR_ASSRT(hmap, HMAP_ERR_PARAM);
 
-  if (*in_node == NULL) {
-    /* If in_node is NULL, user want's first node in table. */
+  if (*in_entry == NULL) {
+    /* If in_entry is NULL, user want's first entry in table. */
     bucket = 0;
-    next_node = hmap->table[bucket];
+    next_entry = hmap->table[bucket];
   } else {
-    /* Next node in list. */
-    bucket = (*in_node)->bucket;
-    next_node = (*in_node)->next;
+    /* Next entry in list. */
+    bucket = (*in_entry)->bucket;
+    next_entry = (*in_entry)->next;
   }
 
-  /* next_node == NULL means we hit the end of a list;
+  /* next_entry == NULL means we hit the end of a list;
    * check subsequent buckets till we find a non-empty one. */
-  while (next_node == NULL && bucket < hmap->table_size) {
+  while (next_entry == NULL && bucket < hmap->table_size) {
     bucket++;
     if (bucket < hmap->table_size) {
-      next_node = hmap->table[bucket];
+      next_entry = hmap->table[bucket];
     }
   }
 
-  *in_node = next_node;  /* If no more nodes, it's NULL. */
+  *in_entry = next_entry;  /* If no more entries, it's NULL. */
   return ERR_OK;
 }  /* hmap_next */

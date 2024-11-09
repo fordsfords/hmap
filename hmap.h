@@ -19,21 +19,24 @@ extern "C" {
 #include <stdint.h>
 #include "err.h"
 
-/* Linked list node for handling collisions */
-typedef struct hmap_node {
+/* Linked list of entries for handling collisions */
+struct hmap_entry_s;  /* Forward definition. */
+struct hmap_entry_s {
     void *key;
     size_t key_size;
     void *value;
-    struct hmap_node *next;
-    uint32_t bucket;  /* Bucket that this node is under. */
-} hmap_node_t;
+    struct hmap_entry_s *next;
+    uint32_t bucket;  /* Bucket that this entry is under. */
+};
+typedef struct hmap_entry_s hmap_entry_t;
 
-typedef struct {
+struct hmap_s {
     size_t table_size;
     uint32_t seed;
-    hmap_node_t **table;
+    hmap_entry_t **table;
     int num_entries;
-} hmap_t;
+};
+typedef struct hmap_s hmap_t;
 
 
 #define HMAP_ERR_PARAM 1
@@ -51,7 +54,7 @@ ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val);
 
 ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val);
 
-ERR_F hmap_next(hmap_t *hmap, hmap_node_t **in_node);
+ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry);
 
 #ifdef __cplusplus
 }

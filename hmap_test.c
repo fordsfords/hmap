@@ -86,9 +86,9 @@ void test1() {
   uint8_t k[5] = {1, 0, 2, 3, 4};
   void *v;
   hmap_t *hmap;
-  hmap_node_t *n;
+  hmap_entry_t *n;
   uint32_t bucket;
-  hmap_node_t *iterator, *iterator_sav;
+  hmap_entry_t *iterator, *iterator_sav;
   err_t *err;
 
   a = 1; b = 2; c = 3;
