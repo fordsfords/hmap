@@ -20,23 +20,22 @@ extern "C" {
 #include "err.h"
 
 /* Linked list of entries for handling collisions */
-struct hmap_entry_s;  /* Forward definition. */
+typedef struct hmap_entry_s hmap_entry_t;  /* Forward definition. */
 struct hmap_entry_s {
     void *key;
     size_t key_size;
     void *value;
-    struct hmap_entry_s *next;
+    hmap_entry_t *next;
     uint32_t bucket;  /* Bucket that this entry is under. */
 };
-typedef struct hmap_entry_s hmap_entry_t;
 
+typedef struct hmap_s hmap_t;
 struct hmap_s {
     size_t table_size;
     uint32_t seed;
     hmap_entry_t **table;
     int num_entries;
 };
-typedef struct hmap_s hmap_t;
 
 
 #define HMAP_ERR_PARAM 1

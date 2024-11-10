@@ -93,17 +93,16 @@ extern "C" {
 } while (0)
 
 
-struct err_s;  /* Forward def to allow self-reference. */
 
-
-/* Internal structure of err object. Application is allowed to look. */
-typedef struct err_s {
+/* Internal structure of err object. Application is allowed to peek. */
+typedef struct err_s err_t;  /* Forward def. */
+struct err_s {
   int code;
   char *file;
   int line;
   char *mesg;  /* Separately malloced. */
-  struct err_s *stacktrace;  /* Linked list. */
-} err_t;
+  err_t *stacktrace;  /* Linked list. */
+};
 
 
 /* Print stack trace to an open FILE pointer (like stderr). */
