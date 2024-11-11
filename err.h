@@ -98,7 +98,7 @@ extern "C" {
 typedef struct err_s err_t;  /* Forward def. */
 struct err_s {
   int code;
-  char *file;
+  const char *file;
   int line;
   char *mesg;  /* Separately malloced. */
   err_t *stacktrace;  /* Linked list. */
@@ -115,8 +115,8 @@ ERR_API void err_dispose(err_t *err);
 /* These generally should not be called directly by applications. The
  * macro forms are preferred.
  */
-ERR_API err_t *err_throw(char *file, int line, int code, char *msg);
-ERR_API err_t *err_rethrow(char *file, int line, err_t *in_err, int code, char *msg);
+ERR_API err_t *err_throw(const char *file, int line, int code, const char *msg);
+ERR_API err_t *err_rethrow(const char *file, int line, err_t *in_err, int code, const char *msg);
 char *err_asprintf(const char *format, ...);
 
 

@@ -18,7 +18,7 @@
 #include "err.h"
 
 
-err_t *err_throw(char *file, int line, int code, char *mesg)
+err_t *err_throw(const char *file, int line, int code, const char *mesg)
 {
   err_t *err = NULL;
   err = (err_t *)calloc(1, sizeof(err_t));
@@ -46,7 +46,7 @@ err_t *err_throw(char *file, int line, int code, char *mesg)
 }  /* err_throw */
 
 
-err_t *err_rethrow(char *file, int line, err_t *in_err, int code, char *mesg)
+err_t *err_rethrow(const char *file, int line, err_t *in_err, int code, const char *mesg)
 {
   err_t *new_err = NULL;
   new_err = (err_t *)calloc(1, sizeof(err_t));
