@@ -25,16 +25,18 @@
 #define MY_SLEEP_MS(msleep_msecs) usleep((msleep_msecs)/1000)
 #endif
 
-#define E(e_test) do { \
-  if ((e_test) != NULL) { \
-    fprintf(stderr, "ERROR [%s:%d]: '%s' returned -1\n", __FILE__, __LINE__, #e_test); \
+#define E(e__test) do { \
+  err_t *e__err = (e__test); \
+  if (e__err != ERR_OK) { \
+    printf("ERROR [%s:%d]: '%s' returned error\n", __FILE__, __LINE__, #e__test); \
+    ERR_ABRT(e__err, stdout); \
     exit(1); \
   } \
 } while (0)
 
-#define ASSRT(assrt_cond) do { \
-  if (! (assrt_cond)) { \
-    fprintf(stderr, "ERROR [%s:%d]: assert '%s' failed\n", __FILE__, __LINE__, #assrt_cond); \
+#define ASSRT(assrt__cond) do { \
+  if (! (assrt__cond)) { \
+    printf("ERROR [%s:%d]: assert '%s' failed\n", __FILE__, __LINE__, #assrt__cond); \
     exit(1); \
   } \
 } while (0)
