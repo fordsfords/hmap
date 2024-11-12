@@ -51,15 +51,15 @@ extern "C" {
 
 
 /* Throwing an error means creating an err object and returning it. */
-#define ERR_THROW(err__code, err__mesg) do { \
-  return err_throw(__FILE__, __LINE__, err__code, err__mesg); \
+#define ERR_THROW(err__code, ...) do { \
+    return err_throw_v(__FILE__, __LINE__, err__code, __VA_ARGS__); \
 } while (0)
 
 
 /* Assert/throw combines sanity test with throw. */
 #define ERR_ASSRT(err__cond_expr, err__code) do { \
   if (!(err__cond_expr)) { \
-    return err_throw(__FILE__, __LINE__, err__code, #err__cond_expr); \
+    return err_throw_v(__FILE__, __LINE__, err__code, #err__cond_expr); \
   } \
 } while (0)
 
@@ -115,8 +115,9 @@ ERR_API void err_dispose(err_t *err);
 /* These generally should not be called directly by applications. The
  * macro forms are preferred.
  */
-ERR_API err_t *err_throw(const char *file, int line, int code, const char *msg);
+err_t *err_throw_v(const char *file, int line, int code, const char *format, ...);
 ERR_API err_t *err_rethrow(const char *file, int line, err_t *in_err, int code, const char *msg);
+char *err_vasprintf(const char *format, va_list args);
 char *err_asprintf(const char *format, ...);
 
 
