@@ -37,10 +37,12 @@ extern "C" {
 
 #define ERR_OK NULL
 
-#ifdef ERR_C
-#  define ERR_CODE(err__code) ERR_API char *err__code = #err__code
+/* The "err.c" module needs to define (and allocate space for)
+ * error codes. Other modules just declare them extern. */
+#ifdef ERR_C  /* If "err.c" is being compiled. */
+#  define ERR_CODE(err__code) ERR_API char *err__code = #err__code  /* Define them. */
 #else
-#  define ERR_CODE(err__code) ERR_API extern char *err__code
+#  define ERR_CODE(err__code) ERR_API extern char *err__code  /* Declare them. */
 #endif
 
 ERR_CODE(ERR_ERR_PARAM);
@@ -48,14 +50,6 @@ ERR_CODE(ERR_ERR_NOMEM);
 ERR_CODE(ERR_ERR_INTERNAL);
 #undef ERR_CODE
 
-/* Simple macro to skip past the dir name of a full path (if any). */
-#if defined(_WIN32)
-#  define ERR_BASENAME(err__p)\
-    ((strrchr(err__p, '\\') == NULL) ? (err__p) : (strrchr(err__p, '\\')+1))
-#else
-#  define ERR_BASENAME(err__p)\
-    ((strrchr(err__p, '/') == NULL) ? (err__p) : (strrchr(err__p, '/')+1))
-#endif
 
 /* Applications that return an err_t should be declared with this macro. */
 #define ERR_F __attribute__ ((__warn_unused_result__)) err_t *
@@ -70,6 +64,15 @@ ERR_CODE(ERR_ERR_INTERNAL);
 /* Explicit re-throw. */
 #define ERR_RETHROW(err__err, ...) do { \
   return err_rethrow_v(__FILE__, __LINE__, __func__, err__err, __VA_ARGS__); \
+} while (0)
+
+
+/* Implicit re-throw. */
+#define ERR(err__funct_call) do { \
+  err_t *err__err = (err__funct_call); \
+  if (err__err) { \
+    return err_rethrow_v(__FILE__, __LINE__, __func__, err__err, err__err->code, #err__funct_call); \
+  } \
 } while (0)
 
 
@@ -95,15 +98,6 @@ ERR_CODE(ERR_ERR_INTERNAL);
 } while (0)
 
 
-/* Implicit re-throw. */
-#define ERR(err__funct_call) do { \
-  err_t *err__err = (err__funct_call); \
-  if (err__err) { \
-    return err_rethrow_v(__FILE__, __LINE__, __func__, err__err, err__err->code, #err__funct_call); \
-  } \
-} while (0)
-
-
 
 /* Internal structure of err object. Application is allowed to peek. */
 typedef struct err_s err_t;  /* Forward def. */
@@ -123,14 +117,16 @@ ERR_API void err_print(err_t *err, FILE *stream);
 /* If an error is handled and not re-thrown, the err object must be deleted. */
 ERR_API void err_dispose(err_t *err);
 
+/* Helper functions for "sprintf()" style functions that malloc their own buffer. */
+ERR_API char *err_vasprintf(const char *format, va_list args);
+ERR_API char *err_asprintf(const char *format, ...);
+
 
 /* These generally should not be called directly by applications. The
  * macro forms are preferred.
  */
 ERR_API err_t *err_throw_v(const char *file, int line, const char *func, char *code, const char *format, ...);
 ERR_API err_t *err_rethrow_v(const char *file, int line, const char *func, err_t *in_err, const char *format, ...);
-ERR_API char *err_vasprintf(const char *format, va_list args);
-ERR_API char *err_asprintf(const char *format, ...);
 
 
 #if defined(__cplusplus)
