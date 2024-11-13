@@ -37,6 +37,17 @@ extern "C" {
 
 #define ERR_OK NULL
 
+#ifdef ERR_C
+#  define ERR_CODE(err__code) ERR_API char *err__code = #err__code
+#else
+#  define ERR_CODE(err__code) ERR_API extern char *err__code
+#endif
+
+ERR_CODE(ERR_ERR_PARAM);
+ERR_CODE(ERR_ERR_NOMEM);
+ERR_CODE(ERR_ERR_INTERNAL);
+#undef ERR_CODE
+
 /* Simple macro to skip past the dir name of a full path (if any). */
 #if defined(_WIN32)
 #  define ERR_BASENAME(err__p)\
@@ -52,24 +63,31 @@ extern "C" {
 
 /* Throwing an error means creating an err object and returning it. */
 #define ERR_THROW(err__code, ...) do { \
-    return err_throw_v(__FILE__, __LINE__, err__code, __VA_ARGS__); \
+    return err_throw_v(__FILE__, __LINE__, __func__, err__code, __VA_ARGS__); \
+} while (0)
+
+
+/* Explicit re-throw. */
+#define ERR_RETHROW(err__err, ...) do { \
+  return err_rethrow_v(__FILE__, __LINE__, __func__, err__err, __VA_ARGS__); \
 } while (0)
 
 
 /* Assert/throw combines sanity test with throw. */
 #define ERR_ASSRT(err__cond_expr, err__code) do { \
   if (!(err__cond_expr)) { \
-    return err_throw_v(__FILE__, __LINE__, err__code, #err__cond_expr); \
+    return err_throw_v(__FILE__, __LINE__, __func__, err__code, #err__cond_expr); \
   } \
 } while (0)
 
 
 /* Shortcut abort-on-error macro. Prints stack trace to stderr. */
-#define ERR_ABRT(err__funct_call, err__stream) do { \
+#define ERR_ABRT_ON_ERR(err__funct_call, err__stream) do { \
   err_t *err__err = (err__funct_call); \
   if (err__err) { \
-    err__err = err_rethrow(__FILE__, __LINE__, err__err, err__err->code, #err__funct_call); \
-    fprintf(err__stream, "ERR_ABRT Failed!\nStack trace:\n----------------\n"); \
+    /* include ERR_ABRT() caller in stack trace. */ \
+    err__err = err_rethrow_v(__FILE__, __LINE__, __func__, err__err, #err__funct_call); \
+    fprintf(err__stream, "ERR_ABRT\nStack trace:\n----------------\n"); \
     err_print(err__err, err__stream); \
     fflush(err__stream); \
     abort(); \
@@ -81,15 +99,8 @@ extern "C" {
 #define ERR(err__funct_call) do { \
   err_t *err__err = (err__funct_call); \
   if (err__err) { \
-    return err_rethrow(__FILE__, __LINE__, err__err, err__err->code, #err__funct_call); \
+    return err_rethrow_v(__FILE__, __LINE__, __func__, err__err, err__err->code, #err__funct_call); \
   } \
-} while (0)
-
-
-/* Explicit re-throw. */
-#define ERR_RETHROW(err__err, err__code) do { \
-  return err_rethrow(__FILE__, __LINE__, err__err, err__err->code, \
-                     "Re-throwing " #err__err); \
 } while (0)
 
 
@@ -97,9 +108,10 @@ extern "C" {
 /* Internal structure of err object. Application is allowed to peek. */
 typedef struct err_s err_t;  /* Forward def. */
 struct err_s {
-  int code;
+  char *code;
   const char *file;
   int line;
+  const char *func;
   char *mesg;  /* Separately malloced. */
   err_t *stacktrace;  /* Linked list. */
 };
@@ -115,10 +127,10 @@ ERR_API void err_dispose(err_t *err);
 /* These generally should not be called directly by applications. The
  * macro forms are preferred.
  */
-err_t *err_throw_v(const char *file, int line, int code, const char *format, ...);
-ERR_API err_t *err_rethrow(const char *file, int line, err_t *in_err, int code, const char *msg);
-char *err_vasprintf(const char *format, va_list args);
-char *err_asprintf(const char *format, ...);
+ERR_API err_t *err_throw_v(const char *file, int line, const char *func, char *code, const char *format, ...);
+ERR_API err_t *err_rethrow_v(const char *file, int line, const char *func, err_t *in_err, const char *format, ...);
+ERR_API char *err_vasprintf(const char *format, va_list args);
+ERR_API char *err_asprintf(const char *format, ...);
 
 
 #if defined(__cplusplus)

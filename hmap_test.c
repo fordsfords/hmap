@@ -29,7 +29,7 @@
   err_t *e__err = (e__test); \
   if (e__err != ERR_OK) { \
     printf("ERROR [%s:%d]: '%s' returned error\n", __FILE__, __LINE__, #e__test); \
-    ERR_ABRT(e__err, stdout); \
+    ERR_ABRT_ON_ERR(e__err, stdout); \
     exit(1); \
   } \
 } while (0)

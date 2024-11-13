@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#define ERR_C
 #include "err.h"
 
 
@@ -60,52 +61,54 @@ char *err_asprintf(const char *format, ...) {
 }  /* err_asprintf */
 
 
-err_t *err_throw_v(const char *file, int line, int code, const char *format, ...) {
-    err_t *err = NULL;
-    err = (err_t *)calloc(1, sizeof(err_t));
-    if (err == NULL) {
-        fprintf(stderr, "err_throw: calloc error, aborting.\n"); fflush(stderr);
-        abort();
-    }
-
-    if (format != NULL) {
-        va_list args;
-        va_start(args, format);
-        err->mesg = err_vasprintf(format, args);
-        va_end(args);
-
-        if (err->mesg == NULL) {
-            fprintf(stderr, "err_throw: message formatting error, aborting.\n");
-            fflush(stderr);
-            free(err);
-            abort();
-        }
-    } else {
-        err->mesg = NULL;
-    }
-
-    err->file = file;
-    err->line = line;
-    err->code = code;
-    err->stacktrace = NULL;
-
-    return err;
-}  /* err_throw_v */
-
-
-err_t *err_rethrow(const char *file, int line, err_t *in_err, int code, const char *mesg)
-{
-  err_t *new_err = NULL;
-  new_err = (err_t *)calloc(1, sizeof(err_t));
-  if (new_err == NULL) {
-    fprintf(stderr, "err_rethrow: calloc error, aborting.\n"); fflush(stderr);
+err_t *err_throw_v(const char *file, int line, const char *func, char *code, const char *format, ...) {
+  err_t *err = NULL;
+  err = (err_t *)calloc(1, sizeof(err_t));
+  if (err == NULL) {
+    fprintf(stderr, "err_throw: calloc error, aborting.\n");  fflush(stderr);
     abort();
   }
 
-  if (mesg != NULL) {
-    new_err->mesg = strdup(mesg);
-    if (mesg == NULL) {
-      fprintf(stderr, "err_rethrow: strdup error, aborting.\n"); fflush(stderr);
+  if (format != NULL) {
+    va_list args;
+    va_start(args, format);
+    err->mesg = err_vasprintf(format, args);
+    va_end(args);
+
+    if (err->mesg == NULL) {
+      fprintf(stderr, "err_throw: message formatting error, aborting.\n");  fflush(stderr);
+      abort();
+    }
+  } else {
+    err->mesg = NULL;
+  }
+
+  err->file = file;
+  err->line = line;
+  err->func = func;
+  err->code = code;
+  err->stacktrace = NULL;
+
+  return err;
+}  /* err_throw_v */
+
+
+err_t *err_rethrow_v(const char *file, int line, const char *func, err_t *in_err, const char *format, ...) {
+  err_t *new_err = NULL;
+  new_err = (err_t *)calloc(1, sizeof(err_t));
+  if (new_err == NULL) {
+    fprintf(stderr, "err_rethrow_v: calloc error, aborting.\n"); fflush(stderr);
+    abort();
+  }
+
+  if (format != NULL) {
+    va_list args;
+    va_start(args, format);
+    new_err->mesg = err_vasprintf(format, args);
+    va_end(args);
+
+    if (new_err->mesg == NULL) {
+      fprintf(stderr, "err_rethrow_v: message formatting error, aborting.\n");  fflush(stderr);
       abort();
     }
   } else {
@@ -114,18 +117,18 @@ err_t *err_rethrow(const char *file, int line, err_t *in_err, int code, const ch
 
   new_err->file = file;
   new_err->line = line;
-  new_err->code = code;
+  new_err->func = func;
+  new_err->code = in_err->code;
   new_err->stacktrace = in_err;
 
   return new_err;
-}  /* err_rethrow */
+}  /* err_throw_v */
 
 
-void err_print(err_t *err, FILE *stream)
-{
+void err_print(err_t *err, FILE *stream) {
   while (err != NULL) {
-    fprintf(stream, "File: %s\nLine: %d\nCode: %d\nMesg: %s\n",
-      err->file, err->line, err->code,
+    fprintf(stream, "[%s:%d %s()]: Code: %s, Mesg: %s\n",
+      err->file, err->line, err->func, err->code,
       (err->mesg == NULL) ? ("(no mesg)") : (err->mesg));
     if (err->stacktrace != NULL) {
       fprintf(stream, "----------------\n");
@@ -137,8 +140,7 @@ void err_print(err_t *err, FILE *stream)
 }  /* err_print */
 
 
-void err_dispose(err_t *err)
-{
+void err_dispose(err_t *err) {
   while (err != NULL) {
     err_t *next_err = err->stacktrace;
     if (err->mesg != NULL) {

@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "err.h"
+#define HMAP_C
 #include "hmap.h"
 
 

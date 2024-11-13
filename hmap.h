@@ -38,9 +38,17 @@ struct hmap_s {
 };
 
 
-#define HMAP_ERR_PARAM 1
-#define HMAP_ERR_NOMEM 2
-#define HMAP_ERR_NOTFOUND 3
+#ifdef HMAP_C
+#  define ERR_CODE(err__code) ERR_API char *err__code = #err__code
+#else
+#  define ERR_CODE(err__code) ERR_API extern char *err__code
+#endif
+
+ERR_CODE(HMAP_ERR_PARAM);
+ERR_CODE(HMAP_ERR_NOMEM);
+ERR_CODE(HMAP_ERR_NOTFOUND);
+
+#undef ERR_CODE
 
 
 uint32_t hmap_murmur3_32(const void *key, size_t len, uint32_t seed);
