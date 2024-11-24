@@ -84,7 +84,35 @@ ERR_CODE(ERR_ERR_INTERNAL);
 } while (0)
 
 
-/* Shortcut abort-on-error macro. Prints stack trace to stderr. */
+/* Prints stack trace to stderr and disposes err structure. */
+#define ERR_WARN_ON_ERR(err__funct_call, err__stream) do { \
+  err_t *err__err = (err__funct_call); \
+  if (err__err) { \
+    /* include ERR_ABRT() caller in stack trace. */ \
+    err__err = err_rethrow_v(__FILE__, __LINE__, __func__, err__err, #err__funct_call); \
+    fprintf(err__stream, "ERR_ABRT\nStack trace:\n----------------\n"); \
+    err_print(err__err, err__stream); \
+    fflush(err__stream); \
+    err_dispose(err__err); \
+  } \
+} while (0)
+
+
+/* Prints stack trace to stderr and calls "exit(1)". */
+#define ERR_EXIT_ON_ERR(err__funct_call, err__stream) do { \
+  err_t *err__err = (err__funct_call); \
+  if (err__err) { \
+    /* include ERR_ABRT() caller in stack trace. */ \
+    err__err = err_rethrow_v(__FILE__, __LINE__, __func__, err__err, #err__funct_call); \
+    fprintf(err__stream, "ERR_ABRT\nStack trace:\n----------------\n"); \
+    err_print(err__err, err__stream); \
+    fflush(err__stream); \
+    exit(1); \
+  } \
+} while (0)
+
+
+/* Prints stack trace to stderr and calls "abort()" to generate core file. */
 #define ERR_ABRT_ON_ERR(err__funct_call, err__stream) do { \
   err_t *err__err = (err__funct_call); \
   if (err__err) { \
@@ -96,7 +124,6 @@ ERR_CODE(ERR_ERR_INTERNAL);
     abort(); \
   } \
 } while (0)
-
 
 
 /* Internal structure of err object. Application is allowed to peek. */
