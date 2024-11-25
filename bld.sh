@@ -14,6 +14,6 @@ echo "Building code"
 
 rm -f hmap_test
 
-gcc -Wall -pthread -g -o hmap_test -pthread hmap.c err.c hmap_test.c; if [ $? -ne 0 ]; then exit 1; fi
+gcc -std=c99 -pedantic -Wall -Wextra -Werror -pthread -g -o hmap_test -pthread hmap.c err.c hmap_test.c; if [ $? -ne 0 ]; then exit 1; fi
 
 echo "Build successful"
