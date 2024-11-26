@@ -156,6 +156,9 @@ ERR_API char *err_asprintf(const char *format, ...);
 ERR_API err_t *err_throw_v(const char *file, int line, const char *func, char *code, const char *format, ...);
 ERR_API err_t *err_rethrow_v(const char *file, int line, const char *func, err_t *in_err, const char *format, ...);
 
+ERR_API ERR_F err_strdup(char **dst_str, const char *src_str);
+ERR_API ERR_F err_calloc(void **rtn_ptr, size_t nmemb, size_t size);
+
 
 #if defined(__cplusplus)
 }

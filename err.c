@@ -19,6 +19,30 @@
 #include "err.h"
 
 
+/* Wrap a few functions to be ERR-compliant. */
+ERR_F err_calloc(void **rtn_ptr, size_t nmemb, size_t size) {
+  ERR_ASSRT(rtn_ptr, ERR_ERR_PARAM);
+  ERR_ASSRT(nmemb > 0, ERR_ERR_PARAM);
+  ERR_ASSRT(size > 0, ERR_ERR_PARAM);
+  ERR_ASSRT(*rtn_ptr = calloc(nmemb, size), ERR_ERR_NOMEM);
+
+  return ERR_OK;
+}  /* err_calloc */
+
+
+ERR_F err_strdup(char **dst_str, const char *src_str) {
+  ERR_ASSRT(src_str, ERR_ERR_PARAM);
+  ERR_ASSRT(dst_str, ERR_ERR_PARAM);
+
+  size_t size = strlen(src_str) + 1;
+  ERR_ASSRT(*dst_str = malloc(size), ERR_ERR_NOMEM);
+
+  memcpy(*dst_str, src_str, size);
+
+  return ERR_OK;
+}  /* err_strdup */
+
+
 /* Thanks to claude.ai for helping me write this vararg code. */
 
 char *err_vasprintf(const char *format, va_list args) {
