@@ -37,39 +37,33 @@ For a more full-featured hashmap with an MIT license, see https://github.com/tid
 
 ## API
 
-Should be pretty obvious. 
-APIs return 0 for success, -1 for error.
+The only non-obvious thing is the use of the "err" system for error handling.
+APIs return ERR_OK for success, or an error object on error.
+See https://github.com/fordsfords/err
+
 A key is an arbitrary byte array, not a necessarily a valid C string (although a C string works fine).
 
 ````
 #include "hmap.h"
 
-int hmap_create(hmap_t **rtn_hmap, size_t table_size); - returns new hmap via rtn_hmap. Prefer table_size to be prime.
+ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size); - returns new hmap via rtn_hmap. Prefer table_size to be prime.
 
-int hmap_delete(hmap_t *hmap); - deletes entire hmap object, freeing memory.
+ERR_F hmap_delete(hmap_t *hmap); - deletes entire hmap object, freeing memory.
 
-int hmap_write(hmap_t *hmap, void *key, size_t key_size, void *val); - only the pointer "val" is stored in the map.
+ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val); - only the pointer "val" is stored in the map, not the content it is pointing at.
 
-int hmap_lookup(hmap_t *hmap, void *key, size_t key_size, void **rtn_val); - if not found, returns -1.
+ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val); - if not found, returns -1.
 
-int hmap_next(hmap_t *hmap, node_t **in_node); - This is an iterator to step through all records in the hash.
-Declare a "nodt_t *node" and set it to NULL to start at the beginning of the table. Each call to "hmap_next()"
-updates your "node" variable to point to the next node in the table, or NULL if you reach the end of the table.
+ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry); - This is an iterator to step through all records in the hash.
+Declare a "hmap_entry_t *entry" and set it to NULL to start at the beginning of the table. Each call to "hmap_next()"
+updates your "entrt" variable to point to the next node in the table, or NULL when you reach the end of the table.
 ````
 
 NOTE: the "hmap_write()" function will overwrite an existing entry with the same key.
 
 This code was not written to be thread-safe.
 
-
-## Integration with "err"
-
-The hmape_* APIs are a simple wrapper to provide integration with
-the "err" project.
-See https://github.com/fordsfords/err
-
-This is optional.
-Only include the "hmape*" files if you want to use "err".
+See "hmap_test.c" for example usages.
 
 
 ## Development
