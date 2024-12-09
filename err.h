@@ -145,19 +145,22 @@ ERR_API void err_print(err_t *err, FILE *stream);
 /* If an error is handled and not re-thrown, the err object must be deleted. */
 ERR_API void err_dispose(err_t *err);
 
-/* Helper functions for "sprintf()" style functions that malloc their own buffer. */
+/* Helper function for "sprintf()" style functions that malloc their own buffer. */
 ERR_API char *err_vasprintf(const char *format, va_list args);
-ERR_API char *err_asprintf(const char *format, ...);
 
 
-/* These generally should not be called directly by applications. The
- * macro forms are preferred.
+/* These functions generally should not be called directly by applications.
+ * The macro forms are preferred.
  */
 ERR_API err_t *err_throw_v(const char *file, int line, const char *func, char *code, const char *format, ...);
 ERR_API err_t *err_rethrow_v(const char *file, int line, const char *func, err_t *in_err, const char *format, ...);
 
-ERR_API ERR_F err_strdup(char **dst_str, const char *src_str);
+/*
+ * Some helpful wrappers.
+ */
+ERR_API ERR_F err_strdup(char **rtn_str, const char *src_str);
 ERR_API ERR_F err_calloc(void **rtn_ptr, size_t nmemb, size_t size);
+ERR_API ERR_F err_asprintf(char **rtn_str, const char *format, ...);
 
 
 #if defined(__cplusplus)

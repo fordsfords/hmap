@@ -14,7 +14,6 @@ the public domain using CC0; see [License](#license).
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Table of contents](#table-of-contents)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Introduction](#introduction)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [API](#api)  
-&nbsp;&nbsp;&nbsp;&nbsp;&bull; [Integration with "err"](#integration-with-err)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Development](#development)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [License](#license)  
 <!-- TOC created by '../mdtoc/mdtoc.pl README.md' (see https://github.com/fordsfords/mdtoc) -->

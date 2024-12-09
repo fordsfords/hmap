@@ -30,14 +30,14 @@ ERR_F err_calloc(void **rtn_ptr, size_t nmemb, size_t size) {
 }  /* err_calloc */
 
 
-ERR_F err_strdup(char **dst_str, const char *src_str) {
+ERR_F err_strdup(char **rtn_str, const char *src_str) {
   ERR_ASSRT(src_str, ERR_ERR_PARAM);
-  ERR_ASSRT(dst_str, ERR_ERR_PARAM);
+  ERR_ASSRT(rtn_str, ERR_ERR_PARAM);
 
   size_t size = strlen(src_str) + 1;
-  ERR_ASSRT(*dst_str = malloc(size), ERR_ERR_NOMEM);
+  ERR_ASSRT(*rtn_str = malloc(size), ERR_ERR_NOMEM);
 
-  memcpy(*dst_str, src_str, size);
+  memcpy(*rtn_str, src_str, size);
 
   return ERR_OK;
 }  /* err_strdup */
@@ -76,12 +76,16 @@ char *err_vasprintf(const char *format, va_list args) {
 }  /* err_vasprintf */
 
 
-char *err_asprintf(const char *format, ...) {
+ERR_F err_asprintf(char **rtn_str, const char *format, ...) {
   va_list args;
   va_start(args, format);
   char *result = err_vasprintf(format, args);
   va_end(args);
-  return result;
+
+  ERR_ASSRT(result, ERR_ERR_NOMEM);
+  *rtn_str = result;
+
+  return ERR_OK;
 }  /* err_asprintf */
 
 

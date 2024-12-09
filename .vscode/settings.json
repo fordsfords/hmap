@@ -1,0 +1,22 @@
+{
+    "cSpell.enabledFileTypes": {
+        "cpp": true
+    },
+    "cSpell.words": [
+        "ABRT",
+        "hmap",
+        "lsim",
+        "mesg",
+        "nand",
+        "qled",
+        "srlatch"
+    ],
+    "vim.scrolloff": 0,
+    "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+        "clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling"
+    ],
+    "files.associations": {
+        "hmap.h": "c",
+        "err.h": "c"
+    }
+}
