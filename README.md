@@ -55,7 +55,7 @@ ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val
 
 ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry); - This is an iterator to step through all records in the hash.
 Declare a "hmap_entry_t *entry" and set it to NULL to start at the beginning of the table. Each call to "hmap_next()"
-updates your "entrt" variable to point to the next node in the table, or NULL when you reach the end of the table.
+updates your "in_entry" variable to point to the next node in the table, or NULL when you reach the end of the table.
 ````
 
 NOTE: the "hmap_write()" function will overwrite an existing entry with the same key.
@@ -69,7 +69,6 @@ See "hmap_test.c" for example usages.
 
 * bld.sh - builds the test program.
 * tst.sh - calls "bld.sh" and runs the test programs.
-* tste.sh - calls "bld.sh" and runs the test programs integrated with "err".
 
 
 ## License
