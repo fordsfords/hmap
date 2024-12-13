@@ -61,6 +61,10 @@ ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val);
 
 ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val);
 
+ERR_F hmap_swrite(hmap_t *hmap, const char *key, void *val);
+
+ERR_F hmap_slookup(hmap_t *hmap, const char *key, void **rtn_val);
+
 ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry);
 
 #ifdef __cplusplus

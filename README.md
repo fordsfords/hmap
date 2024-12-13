@@ -14,7 +14,15 @@ the public domain using CC0; see [License](#license).
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Table of contents](#table-of-contents)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Introduction](#introduction)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [API](#api)  
-&nbsp;&nbsp;&nbsp;&nbsp;&bull; [Development](#development)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [Functions](#functions)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size)`](#err_f-hmap_createhmap_t-rtn_hmap-size_t-table_size)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_delete(hmap_t *hmap)`](#err_f-hmap_deletehmap_t-hmap)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val)`](#err_f-hmap_writehmap_t-hmap-const-void-key-size_t-key_size-void-val)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val)`](#err_f-hmap_lookuphmap_t-hmap-const-void-key-size_t-key_size-void-rtn_val)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry)`](#err_f-hmap_nexthmap_t-hmap-hmap_entry_t-in_entry)  
+&nbsp;&nbsp;&nbsp;&nbsp;&bull; [Example](#example)  
+&nbsp;&nbsp;&nbsp;&nbsp;&bull; [Implementation Notes](#implementation-notes)  
+&nbsp;&nbsp;&nbsp;&nbsp;&bull; [Development Tips](#development-tips)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [License](#license)  
 <!-- TOC created by '../mdtoc/mdtoc.pl README.md' (see https://github.com/fordsfords/mdtoc) -->
 <!-- mdtoc-end -->
@@ -27,45 +35,83 @@ Sometimes I want to use a hash map in my code, and I don't like to have to inclu
 Fortunately, Austin Appleby's excellent murmur3 is in the public domain,
 so with a little help from Claude.ai I was able to get this working in a couple hours.
 
-Note that it could be more efficient, and it certainly could be more functional.
-E.g. it might be nice to remove individual records.
-I emphasized short and simple over almost everything else.
+This implementation emphasizes simplicity and clarity over advanced features. For a more full-featured hashmap with an MIT license, see https://github.com/tidwall/hashmap.c.
 
-For a more full-featured hashmap with an MIT license, see https://github.com/tidwall/hashmap.c
+- Simple, lightweight implementation with no external dependencies
+- Uses MurmurHash3 for efficient key hashing
+- Supports arbitrary byte arrays as keys (not limited to strings)
+- Iterator functionality for traversing all entries
+- Public domain (CC0) licensed
+- Not thread-safe (by design, for simplicity)
 
 
 ## API
 
-The only non-obvious thing is the use of the "err" system for error handling.
-APIs return ERR_OK for success, or an error object on error.
-See https://github.com/fordsfords/err
+The library uses the "err" system for error handling.
+All functions return `ERR_OK` for success or an error object on failure.
+See https://github.com/fordsfords/err for details.
 
 A key is an arbitrary byte array, not a necessarily a valid C string (although a C string works fine).
 
-````
-#include "hmap.h"
+### Functions
 
-ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size); - returns new hmap via rtn_hmap. Prefer table_size to be prime.
+#### `ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size)`
+Creates a new hash map.
+- Parameters:
+  - `rtn_hmap`: Pointer to store the created hash map
+  - `table_size`: Initial size of the hash table (preferably a prime number)
+- Returns: `ERR_OK` on success, `HMAP_ERR_PARAM` or `HMAP_ERR_NOMEM` on failure
+- Notes: The table size remains fixed; the map does not automatically resize
+Choose a table_size that will accomodate expected growth.
 
-ERR_F hmap_delete(hmap_t *hmap); - deletes entire hmap object, freeing memory.
+#### `ERR_F hmap_delete(hmap_t *hmap)`
+Deletes the hash map and frees all associated memory.
+- Parameters:
+  - `hmap`: The hash map to delete
+- Notes: Does not free the values stored in the map; that's the caller's responsibility
 
-ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val); - only the pointer "val" is stored in the map, not the content it is pointing at.
+#### `ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val)`
+Stores a key-value pair in the map.
+- Parameters:
+  - `hmap`: The hash map
+  - `key`: Pointer to the key data
+  - `key_size`: Size of the key in bytes
+  - `val`: Pointer to the value (only the pointer is stored)
+- Notes: 
+  - If the key already exists, the value is updated
+  - The key is copied, but the value pointer is stored as-is
 
-ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val); - if not found, returns -1.
+#### `ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val)`
+Retrieves a value from the map.
+- Parameters:
+  - `hmap`: The hash map
+  - `key`: Pointer to the key data
+  - `key_size`: Size of the key in bytes
+  - `rtn_val`: Pointer to store the found value
+- Returns: `ERR_OK` if found, `HMAP_ERR_NOTFOUND` if the key doesn't exist
 
-ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry); - This is an iterator to step through all records in the hash.
-Declare a "hmap_entry_t *entry" and set it to NULL to start at the beginning of the table. Each call to "hmap_next()"
-updates your "in_entry" variable to point to the next node in the table, or NULL when you reach the end of the table.
-````
+#### `ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry)`
+Iterates through all entries in the map.
+- Parameters:
+  - `hmap`: The hash map
+  - `in_entry`: Entry pointer (set to NULL to start iteration)
+- Notes: Returns entries in arbitrary order based on hash distribution
 
-NOTE: the "hmap_write()" function will overwrite an existing entry with the same key.
+## Example
 
-This code was not written to be thread-safe.
-
-See "hmap_test.c" for example usages.
+See [example.c](example.c).
 
 
-## Development
+## Implementation Notes
+
+- Not thread-safe (by design, for simplicity)
+- Uses MurmurHash3 algorithm for hash generation
+- Collision resolution through chaining (linked lists)
+- Fixed-size hash table (no automatic resizing)
+- Keys are copied, values are stored by reference
+
+
+## Development Tips
 
 * bld.sh - builds the test program.
 * tst.sh - calls "bld.sh" and runs the test programs.

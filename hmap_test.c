@@ -304,6 +304,24 @@ void test1() {
   ASSRT(iterator == NULL);
 
   E(hmap_delete(hmap));
+
+  /* Teset string interfaces. */
+  E(hmap_create(&hmap, 7919));  /* prime number. */
+
+  E(hmap_swrite(hmap, "abc", "ABC"));
+
+  char *fetch;
+  E(hmap_slookup(hmap, "abc", (void *)&fetch));
+  ASSRT(strcmp(fetch, "ABC") == 0);
+
+  iterator = NULL;
+  E(hmap_next(hmap, &iterator));
+  ASSRT(iterator);
+  ASSRT(iterator->key_size == 4);
+  ASSRT(strcmp(iterator->key, "abc") == 0);
+  ASSRT(strcmp(iterator->value, "ABC") == 0);
+
+  E(hmap_delete(hmap));
 }  /* test1 */
 
 

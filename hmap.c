@@ -68,15 +68,14 @@ uint32_t hmap_murmur3_32(const void *key, size_t key_len, uint32_t seed) {
 
 
 ERR_F hmap_create(hmap_t **rtn_hmap, size_t table_size) {
-  hmap_t *hmap;
+  ERR_ASSRT(rtn_hmap, HMAP_ERR_PARAM);
+  ERR_ASSRT(table_size > 0, HMAP_ERR_PARAM);
 
-  ERR_ASSRT(table_size != 0, HMAP_ERR_PARAM);
-
-  hmap = calloc(1, sizeof(hmap_t));
+  hmap_t *hmap = calloc(1, sizeof(hmap_t));
   ERR_ASSRT(hmap, HMAP_ERR_NOMEM);
 
   (hmap)->table_size = table_size;
-  (hmap)->seed = 42;  /* Could be made in input parameter. */
+  (hmap)->seed = 42;  /* Could be made an input parameter. */
   (hmap)->num_entries = 0;
   (hmap)->table = calloc(table_size, sizeof(hmap_entry_t*));
   if (!(hmap)->table) {
@@ -171,6 +170,24 @@ ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val
   }
   ERR_THROW(HMAP_ERR_NOTFOUND, "key not found");
 }  /* hmap_lookup */
+
+
+ERR_F hmap_swrite(hmap_t *hmap, const char *skey, void *val) {
+  ERR_ASSRT(hmap, HMAP_ERR_PARAM);
+  ERR_ASSRT(skey, HMAP_ERR_PARAM);
+  ERR(hmap_write(hmap, skey, strlen(skey)+1, val));
+
+  return ERR_OK;
+}  /* hmap_swrite */
+
+
+ERR_F hmap_slookup(hmap_t *hmap, const char *skey, void **rtn_val) {
+  ERR_ASSRT(hmap, HMAP_ERR_PARAM);
+  ERR_ASSRT(skey, HMAP_ERR_PARAM);
+  ERR(hmap_lookup(hmap, (void *)skey, strlen(skey)+1, rtn_val));
+
+  return ERR_OK;
+}  /* hmap_slookup */
 
 
 ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry) {
