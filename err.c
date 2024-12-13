@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #define ERR_C
 #include "err.h"
 
@@ -41,6 +42,27 @@ ERR_F err_strdup(char **rtn_str, const char *src_str) {
 
   return ERR_OK;
 }  /* err_strdup */
+
+
+ERR_F err_atol(const char *in_str, long *rtn_value) {
+  int base = 10;
+
+  if (in_str[0] == '0' && (in_str[1] == 'x' || in_str[1] == 'X')) {
+    base = 16;
+    in_str += 2;  /* Step past the "0x". */
+  }
+
+  errno = 0;  /* Best practice when using strtol. */
+  char *p = NULL;
+  long value = strtol(in_str, &p, base);
+  /* Check for error. */
+  if (errno != 0 || p == in_str || p == NULL || *p != '\0') {
+    ERR_THROW(ERR_ERR_BAD_NUMBER, in_str);
+  }
+
+  *rtn_value = value;
+  return ERR_OK;
+}  /* err_atol */
 
 
 /* Thanks to claude.ai for helping me write this vararg code. */

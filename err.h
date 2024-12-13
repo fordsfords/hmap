@@ -49,6 +49,7 @@ extern "C" {
 ERR_CODE(ERR_ERR_PARAM);
 ERR_CODE(ERR_ERR_NOMEM);
 ERR_CODE(ERR_ERR_INTERNAL);
+ERR_CODE(ERR_ERR_BAD_NUMBER);
 #undef ERR_CODE
 
 
@@ -161,6 +162,7 @@ ERR_API err_t *err_rethrow_v(const char *file, int line, const char *func, err_t
 ERR_API ERR_F err_strdup(char **rtn_str, const char *src_str);
 ERR_API ERR_F err_calloc(void **rtn_ptr, size_t nmemb, size_t size);
 ERR_API ERR_F err_asprintf(char **rtn_str, const char *format, ...);
+ERR_API ERR_F err_atol(const char *in_str, long *rtn_value);
 
 
 #if defined(__cplusplus)
