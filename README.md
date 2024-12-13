@@ -19,6 +19,8 @@ the public domain using CC0; see [License](#license).
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_delete(hmap_t *hmap)`](#err_f-hmap_deletehmap_t-hmap)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_write(hmap_t *hmap, const void *key, size_t key_size, void *val)`](#err_f-hmap_writehmap_t-hmap-const-void-key-size_t-key_size-void-val)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_lookup(hmap_t *hmap, const void *key, size_t key_size, void **rtn_val)`](#err_f-hmap_lookuphmap_t-hmap-const-void-key-size_t-key_size-void-rtn_val)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_swrite(hmap_t *hmap, const char *key, void *val)`](#err_f-hmap_swritehmap_t-hmap-const-char-key-void-val)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_slookup(hmap_t *hmap, const char *key, void **rtn_val)`](#err_f-hmap_slookuphmap_t-hmap-const-char-key-void-rtn_val)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&bull; [`ERR_F hmap_next(hmap_t *hmap, hmap_entry_t **in_entry)`](#err_f-hmap_nexthmap_t-hmap-hmap_entry_t-in_entry)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Example](#example)  
 &nbsp;&nbsp;&nbsp;&nbsp;&bull; [Implementation Notes](#implementation-notes)  
@@ -51,7 +53,9 @@ The library uses the "err" system for error handling.
 All functions return `ERR_OK` for success or an error object on failure.
 See https://github.com/fordsfords/err for details.
 
-A key is an arbitrary byte array, not a necessarily a valid C string (although a C string works fine).
+There are two sets of write/lookup APIs, one that allows an
+arbitrary byte array as the key,
+and the other assumes the key is a normal C string.
 
 ### Functions
 
@@ -85,8 +89,26 @@ Stores a key-value pair in the map.
 Retrieves a value from the map.
 - Parameters:
   - `hmap`: The hash map
-  - `key`: Pointer to the key data
+  - `key`: Pointer to the key string
   - `key_size`: Size of the key in bytes
+  - `rtn_val`: Pointer to store the found value
+- Returns: `ERR_OK` if found, `HMAP_ERR_NOTFOUND` if the key doesn't exist
+
+#### `ERR_F hmap_swrite(hmap_t *hmap, const char *key, void *val)`
+Stores a key-value pair in the map. Key must be a C string.
+- Parameters:
+  - `hmap`: The hash map
+  - `key`: Pointer to the key string
+  - `val`: Pointer to the value (only the pointer is stored)
+- Notes: 
+  - If the key already exists, the value is updated
+  - The key is copied, but the value pointer is stored as-is
+
+#### `ERR_F hmap_slookup(hmap_t *hmap, const char *key, void **rtn_val)`
+Retrieves a value from the map. Key must be a C string.
+- Parameters:
+  - `hmap`: The hash map
+  - `key`: Pointer to the key data
   - `rtn_val`: Pointer to store the found value
 - Returns: `ERR_OK` if found, `HMAP_ERR_NOTFOUND` if the key doesn't exist
 
