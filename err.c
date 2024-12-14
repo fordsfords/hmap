@@ -65,7 +65,7 @@ ERR_F err_atol(const char *in_str, long *rtn_value) {
 }  /* err_atol */
 
 
-/* Thanks to claude.ai for helping me write this vararg code. */
+/* Thanks to Claude.ai for helping me write this vararg code. */
 
 char *err_vasprintf(const char *format, va_list args) {
   va_list args_copy;

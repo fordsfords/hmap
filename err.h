@@ -56,6 +56,7 @@ ERR_CODE(ERR_ERR_BAD_NUMBER);
 /* Applications that return an err_t should be declared with this macro. */
 #define ERR_F __attribute__ ((__warn_unused_result__)) err_t *
 
+/* Thanks to Claude.ai for help with variadic macros and functions! */
 
 /* Throwing an error means creating an err object and returning it. */
 #define ERR_THROW(err__code, ...) do { \
@@ -149,6 +150,8 @@ ERR_API void err_dispose(err_t *err);
 /* Helper function for "sprintf()" style functions that malloc their own buffer. */
 ERR_API char *err_vasprintf(const char *format, va_list args);
 
+
+/* Thanks to Claude.ai for help with variadic macros and functions! */
 
 /* These functions generally should not be called directly by applications.
  * The macro forms are preferred.

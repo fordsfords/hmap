@@ -2,8 +2,7 @@
 A simple implementation of a hashmap based on Austin Appleby's
 [murmur3](https://github.com/aappleby/smhasher) algorithm.
 Many thanks to Austin for putting his reference code in the public domain.
-Full disclosure: [Claude.ai](https://claude.ai) helped me with the C code
-and deserves some credit as well. I am also placing this implementation in
+I am also placing this implementation in
 the public domain using CC0; see [License](#license).
 
 
@@ -45,6 +44,9 @@ This implementation emphasizes simplicity and clarity over advanced features. Fo
 - Iterator functionality for traversing all entries
 - Public domain (CC0) licensed
 - Not thread-safe (by design, for simplicity)
+
+Thanks to Claude.ai for some help with the code and much help with the doc.
+See https://blog.geeky-boy.com/2024/12/claude-as-coders-assistant.html for details.
 
 
 ## API
