@@ -1,14 +1,14 @@
 /* err.c - Error handling infrastructure.
- * See https://github.com/fordsfords/err for documentation.
- *
- * This code and its documentation is Copyright 2019, 2019 Steven Ford,
- * http://geeky-boy.com and licensed "public domain" style under Creative
- * Commons "CC0": http://creativecommons.org/publicdomain/zero/1.0/
- * To the extent possible under law, the contributors to this project have
- * waived all copyright and related or neighboring rights to this work.
- * In other words, you can use this code for any purpose without any
- * restrictions. This work is published from: United States. The project home
- * is https://github.com/fordsfords/err
+ * See https://github.com/fordsfords/err for documentation. */
+
+/* This work is dedicated to the public domain under CC0 1.0 Universal:
+ * http://creativecommons.org/publicdomain/zero/1.0/
+ * 
+ * To the extent possible under law, Steven Ford has waived all copyright
+ * and related or neighboring rights to this work. In other words, you can 
+ * use this code for any purpose without any restrictions.
+ * This work is published from: United States.
+ * Project home: https://github.com/fordsfords/err
  */
 
 #include <stdio.h>
